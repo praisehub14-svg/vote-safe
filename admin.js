@@ -149,7 +149,17 @@ auth.onAuthStateChanged(async user => {
     return;
   }
 
-  const isAdmin = !!user.email && user.email.toLowerCase() === adminEmail.toLowerCase();
+  // allow admin by email OR by `isAdmin` flag on the user document
+  let isAdmin = false;
+  try {
+    const userDoc = await db.collection('users').doc(user.uid).get();
+    const userData = userDoc.exists ? userDoc.data() : null;
+    isAdmin = (!!user.email && user.email.toLowerCase() === adminEmail.toLowerCase()) || (userData && userData.isAdmin === true);
+  } catch (err) {
+    console.error('Admin check failed', err);
+    isAdmin = !!user.email && user.email.toLowerCase() === adminEmail.toLowerCase();
+  }
+
   if (!isAdmin) {
     window.location.href = 'index.html';
     return;

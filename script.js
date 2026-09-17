@@ -579,10 +579,8 @@ if (logoutBtn) {
 
 if (profileBtn) {
   profileBtn.addEventListener('click', () => {
-    if (!profileModal) return;
-    profileModal.hidden = false;
-    profileModal.setAttribute('aria-hidden', 'false');
-    document.body.style.overflow = 'hidden';
+    // Open full profile page for a cleaner experience
+    window.location.href = 'profile.html';
   });
 }
 
@@ -648,7 +646,16 @@ auth.onAuthStateChanged(async user => {
   closeAuthOverlay();
   if (appMain) appMain.classList.remove('locked');
 
-  const isAdmin = user.email && user.email.toLowerCase() === adminEmail.toLowerCase();
+  // determine admin via email or a server-side flag on the user document
+  let isAdmin = false;
+  try {
+    const userDoc = await db.collection('users').doc(user.uid).get();
+    const userData = userDoc.exists ? userDoc.data() : null;
+    isAdmin = (user.email && user.email.toLowerCase() === adminEmail.toLowerCase()) || (userData && userData.isAdmin === true);
+  } catch (err) {
+    console.error('Admin check failed', err);
+    isAdmin = user.email && user.email.toLowerCase() === adminEmail.toLowerCase();
+  }
 
   if (headerUser) headerUser.hidden = false;
   if (profileBtn) profileBtn.hidden = false;

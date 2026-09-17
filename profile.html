@@ -1,0 +1,67 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <title>Profile — Vote Safe</title>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700&display=swap" rel="stylesheet" />
+  <link rel="stylesheet" href="style.css" />
+  <link rel="stylesheet" href="assets/auth.css" />
+</head>
+<body>
+  <header class="site-header" style="position:static">
+    <a class="brand" href="index.html" aria-label="Vote Safe home">
+      <img src="assets/logo.svg" alt="Vote Safe logo" class="brand-logo" />
+      <span>Vote<span class="brand-accent">Safe</span></span>
+    </a>
+    <nav class="main-nav">
+      <a class="nav-link" href="index.html">Back to site</a>
+    </nav>
+  </header>
+
+  <main class="section-container" style="max-width:720px;margin:36px auto">
+    <div class="profile-page card">
+      <div style="display:flex;gap:18px;align-items:center">
+        <div style="width:120px;height:120px;border-radius:18px;overflow:hidden;flex:0 0 120px;background:#f3f4f6">
+          <img id="profileAvatar" src="" alt="profile avatar" style="width:100%;height:100%;object-fit:cover" />
+        </div>
+        <div>
+          <div class="eyebrow">Profile</div>
+          <h1 id="profileTitle">Your account</h1>
+          <p id="profileEmail">—</p>
+        </div>
+      </div>
+
+      <div style="margin-top:20px">
+        <label class="profile-field" style="display:block">
+          <span>Display name</span>
+          <input id="profileDisplayName" type="text" placeholder="Your full name" />
+        </label>
+
+        <div class="profile-actions" style="margin-top:18px">
+          <button id="saveProfile" class="button button-primary">Save profile</button>
+          <button id="logoutBtn" class="button button-danger">Sign out</button>
+        </div>
+      </div>
+
+      <p style="margin-top:18px;color:#6b7280">Your avatar is generated for privacy — change your display name to refresh it.</p>
+    </div>
+  </main>
+
+  <script src="https://www.gstatic.com/firebasejs/9.22.1/firebase-app-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/9.22.1/firebase-auth-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/9.22.1/firebase-firestore-compat.js"></script>
+  <script src="script.js"></script>
+  <script>
+    // ensure the page requires auth before showing
+    firebase.auth().onAuthStateChanged(user => {
+      if (!user) {
+        window.location.href = 'index.html';
+        return;
+      }
+      // updateHeader will populate profile fields from users collection
+      updateHeader(user);
+    });
+  </script>
+</body>
+</html>
