@@ -20,6 +20,7 @@ const signUpBtn = document.getElementById('signUpBtn');
 // UI toggles
 const showSignIn = document.getElementById('showSignIn');
 const showSignUp = document.getElementById('showSignUp');
+const formsSlider = document.getElementById('formsSlider');
 const signOutBtn = document.getElementById('signOutBtn');
 const authNotice = document.getElementById('authNotice');
 const adminPanel = document.getElementById('adminPanel');
@@ -176,17 +177,45 @@ setInterval(() => {
 
 // Authentication flows
 showSignIn?.addEventListener('click', () => {
-  document.getElementById('signInForm').hidden = false;
-  document.getElementById('signUpForm').hidden = true;
+  // animate slider to sign-in
+  const card = document.querySelector('.auth-card');
+  card.classList.remove('show-signup');
+  showSignIn.classList.add('active');
+  showSignUp.classList.remove('active');
 });
 showSignUp?.addEventListener('click', () => {
-  document.getElementById('signInForm').hidden = true;
-  document.getElementById('signUpForm').hidden = false;
+  // animate slider to sign-up
+  const card = document.querySelector('.auth-card');
+  card.classList.add('show-signup');
+  showSignUp.classList.add('active');
+  showSignIn.classList.remove('active');
+});
+
+// password visibility toggles
+document.querySelectorAll('.password-toggle').forEach((btn) => {
+  btn.addEventListener('click', () => {
+    const input = btn.parentElement.querySelector('input');
+    if (!input) return;
+    if (input.type === 'password') {
+      input.type = 'text';
+      btn.textContent = '🙈';
+    } else {
+      input.type = 'password';
+      btn.textContent = '👁';
+    }
+  });
 });
 
 signInBtn.addEventListener('click', async () => {
   try {
     await auth.signInWithEmailAndPassword(signInEmail.value, signInPassword.value);
+    // close overlay immediately on success
+    authOverlay.hidden = true;
+    authNotice.textContent = 'Signed in';
+    toast.querySelector('strong').textContent = 'Signed in';
+    toast.querySelector('small').textContent = 'Welcome back.';
+    toast.classList.add('show');
+    setTimeout(() => toast.classList.remove('show'), 2000);
   } catch (err) {
     authNotice.textContent = err.message;
   }
@@ -201,22 +230,15 @@ signUpBtn.addEventListener('click', async () => {
     const initials = initialsFromName(displayNameVal || cred.user.email || '');
     const avatar = generateAvatarDataUrl(initials, color);
     await db.collection('users').doc(cred.user.uid).set({ email: cred.user.email, displayName: displayNameVal, avatarColor: color, avatar, createdAt: firebase.firestore.FieldValue.serverTimestamp() });
-    // show success, auto-close form and notify
+    // show success, close immediately and notify
     authNotice.textContent = 'Account created — signing in...';
-    // add small animation and close
-    const card = document.querySelector('.auth-card');
-    if (card) card.classList.add('fade-out');
-    setTimeout(() => {
-      authOverlay.hidden = true;
-      if (card) card.classList.remove('fade-out');
-      // show toast
-      const toastTitle = toast.querySelector('strong');
-      const toastSmall = toast.querySelector('small');
-      if (toastTitle) toastTitle.textContent = 'Account created';
-      if (toastSmall) toastSmall.textContent = 'You are signed in and ready.';
-      toast.classList.add('show');
-      setTimeout(() => toast.classList.remove('show'), 3000);
-    }, 650);
+    authOverlay.hidden = true;
+    const toastTitle = toast.querySelector('strong');
+    const toastSmall = toast.querySelector('small');
+    if (toastTitle) toastTitle.textContent = 'Account created';
+    if (toastSmall) toastSmall.textContent = 'Welcome — signing in.';
+    toast.classList.add('show');
+    setTimeout(() => toast.classList.remove('show'), 3000);
   } catch (err) {
     authNotice.textContent = err.message;
   }
@@ -310,7 +332,9 @@ auth.onAuthStateChanged(async (user) => {
     // Update header and profile UI
     headerUser.hidden = false;
     headerAvatar.src = profile.avatar;
+    headerAvatar.hidden = false;
     profileAvatar.src = profile.avatar;
+    profileAvatar.hidden = false;
     profileNameEl.textContent = profile.displayName || user.email;
     profileEmail.textContent = user.email;
     profileDisplayName.value = profile.displayName || '';

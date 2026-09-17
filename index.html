@@ -132,22 +132,26 @@
         <button id="showSignUp" class="button button-outline">Create account</button>
       </div>
       <div class="auth-forms">
-        <form id="signInForm" class="auth-form">
-          <div class="field"><label for="signInEmail">Email</label><input id="signInEmail" type="email" placeholder="you@school.edu" required/></div>
-          <div class="field"><label for="signInPassword">Password</label><input id="signInPassword" type="password" placeholder="••••••••" required/></div>
-          <div class="auth-actions">
-            <button id="signInBtn" type="button" class="button button-primary">Sign in</button>
-          </div>
-        </form>
+        <div class="forms-viewport">
+          <div class="forms-slider" id="formsSlider">
+            <form id="signInForm" class="auth-form" aria-label="Sign in form">
+              <div class="field"><label for="signInEmail">Email</label><input id="signInEmail" type="email" placeholder="you@school.edu" required/></div>
+              <div class="field password-field"><label for="signInPassword">Password</label><input id="signInPassword" type="password" placeholder="••••••••" required/><button type="button" class="password-toggle" aria-label="Toggle password visibility">👁</button></div>
+              <div class="auth-actions">
+                <button id="signInBtn" type="button" class="button button-primary button-animated">Sign in</button>
+              </div>
+            </form>
 
-        <form id="signUpForm" class="auth-form" hidden>
-          <div class="field"><label for="signUpDisplayName">Full name</label><input id="signUpDisplayName" type="text" placeholder="Your name" /></div>
-          <div class="field"><label for="signUpEmail">Email</label><input id="signUpEmail" type="email" placeholder="you@school.edu" required/></div>
-          <div class="field"><label for="signUpPassword">Password</label><input id="signUpPassword" type="password" placeholder="••••••••" required/></div>
-          <div class="auth-actions">
-            <button id="signUpBtn" type="button" class="button button-outline">Create account</button>
+            <form id="signUpForm" class="auth-form" aria-label="Sign up form">
+              <div class="field"><label for="signUpDisplayName">Full name</label><input id="signUpDisplayName" type="text" placeholder="Your name" required/></div>
+              <div class="field"><label for="signUpEmail">Email</label><input id="signUpEmail" type="email" placeholder="you@school.edu" required/></div>
+              <div class="field password-field"><label for="signUpPassword">Password</label><input id="signUpPassword" type="password" placeholder="••••••••" required/><button type="button" class="password-toggle" aria-label="Toggle password visibility">👁</button></div>
+              <div class="auth-actions">
+                <button id="signUpBtn" type="button" class="button button-primary button-animated">Create account</button>
+              </div>
+            </form>
           </div>
-        </form>
+        </div>
       </div>
       <div class="auth-foot"><button id="signOutBtn" class="text-link" hidden>Sign out</button></div>
     </div>
@@ -175,7 +179,7 @@
     <div class="modal profile-modal" role="dialog" aria-modal="true" aria-labelledby="profileTitle">
       <button class="modal-close" id="closeProfile" type="button" aria-label="Close">×</button>
       <div class="profile-top">
-        <img id="profileAvatar" src="" alt="avatar" class="profile-avatar-large" />
+        <img id="profileAvatar" src="" alt="avatar" class="profile-avatar-large" hidden />
         <div>
           <h2 id="profileName">—</h2>
           <p id="profileEmail">—</p>

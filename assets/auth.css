@@ -12,6 +12,26 @@
 .auth-form input{padding:10px 12px;border-radius:10px;border:1px solid var(--line);font-size:14px;background:transparent}
 .auth-form input:focus{outline:none;border-color:var(--green);box-shadow:0 6px 18px rgba(21,150,99,.08)}
 
+/* Slider layout for forms */
+.forms-viewport{overflow:hidden}
+.forms-slider{display:flex;gap:18px;transition:transform .38s cubic-bezier(.2,.9,.2,1);width:200%}
+.forms-slider .auth-form{width:50%;min-width:300px;padding:6px 0}
+
+.auth-card.show-signup .forms-slider{transform:translateX(-50%)}
+
+/* password toggle */
+.password-field{position:relative}
+.password-toggle{position:absolute;right:10px;top:36px;border:0;background:transparent;font-size:16px;padding:6px;cursor:pointer}
+
+/* Responsive constraints and scroll */
+.auth-card{max-height:80vh;overflow:auto}
+@media (max-width:520px){
+	.auth-card{width:calc(100% - 24px);border-radius:12px;padding:16px;margin:12px;height:100vh;max-height:100vh;align-self:flex-start}
+	.forms-slider{width:200%;gap:12px}
+	.forms-slider .auth-form{width:100%}
+	.auth-card .auth-head h2{font-size:18px}
+}
+
 /* Animated primary button */
 .button-primary{background:linear-gradient(90deg,var(--green),var(--green-dark));color:var(--white)}
 .button-primary:focus{box-shadow:0 8px 28px rgba(21,150,99,.18)}
