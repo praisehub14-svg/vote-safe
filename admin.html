@@ -1,48 +1,96 @@
-<!doctype html>
+﻿<!doctype html>
 <html lang="en">
 <head>
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width,initial-scale=1" />
   <title>Admin Dashboard — Vote Safe</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=Space+Grotesk:wght@500;600;700&display=swap" rel="stylesheet" />
   <link rel="stylesheet" href="assets/admin.css" />
 </head>
 <body>
-  <header class="admin-header">
-    <div class="brand"><img src="assets/logo.svg" alt="Vote Safe" /><h1>Admin Dashboard</h1></div>
-    <div class="admin-actions"><button id="signOutAdmin" class="button">Sign out</button></div>
-  </header>
-
-  <main class="admin-main">
-    <section class="admin-top">
-      <div class="stat-card">
-        <h3>Total votes</h3>
-        <div id="totalVotes" class="stat-value">0</div>
+  <div class="admin-shell">
+    <header class="admin-header">
+      <div class="brand-wrap">
+        <img src="assets/logo.svg" alt="Vote Safe" />
+        <div>
+          <span class="eyebrow">Secure admin access</span>
+          <h1>Admin dashboard</h1>
+        </div>
       </div>
-      <div class="stat-card">
-        <h3>Live Activity</h3>
-        <div id="liveActivity" class="live-activity"></div>
-      </div>
-      <div class="stat-card">
-        <h3>Announcements</h3>
-        <div id="announceList" class="announce-list"></div>
-      </div>
-    </section>
 
-    <section class="chart-section">
-      <h2>Votes by candidate</h2>
-      <div id="chart" class="bar-chart"></div>
-    </section>
+      <div class="admin-actions">
+        <a class="button button-outline" href="index.html">Back to site</a>
+        <button id="signOutAdmin" class="button button-primary">Sign out</button>
+      </div>
+    </header>
 
-    <section class="announce-section">
-      <textarea id="announceText" placeholder="Write announcement or declare winner..."></textarea>
-      <div class="announce-actions"><button id="publishAnnounce" class="button button-primary">Publish</button><button id="declareWinner" class="button button-outline">Declare Winner</button></div>
-    </section>
-  </main>
+    <main class="admin-main">
+      <section class="top-stats">
+        <div class="stat-card accent">
+          <span class="stat-label">Total votes</span>
+          <strong id="totalVotes">0</strong>
+        </div>
+        <div class="stat-card">
+          <span class="stat-label">Registered users</span>
+          <strong id="totalUsers">0</strong>
+        </div>
+        <div class="stat-card">
+          <span class="stat-label">Candidates</span>
+          <strong id="totalCandidates">0</strong>
+        </div>
+        <div class="stat-card">
+          <span class="stat-label">Leader</span>
+          <strong id="winnerName">—</strong>
+        </div>
+      </section>
+
+      <section class="dashboard-grid">
+        <div class="panel large-panel">
+          <div class="panel-head">
+            <h2>Live voting report</h2>
+            <span class="pill success">Live</span>
+          </div>
+          <div id="candidateBreakdown" class="candidate-breakdown"></div>
+        </div>
+
+        <div class="panel">
+          <div class="panel-head">
+            <h2>Recent activity</h2>
+          </div>
+          <div id="liveActivity" class="activity-list"></div>
+        </div>
+      </section>
+
+      <section class="dashboard-grid lower-grid">
+        <div class="panel">
+          <div class="panel-head">
+            <h2>Manage candidates</h2>
+          </div>
+
+          <form id="addCandidateForm" class="candidate-form">
+            <input id="candidateName" type="text" placeholder="Candidate name" required />
+            <input id="candidateParty" type="text" placeholder="Party or affiliation" required />
+            <button type="submit" class="button button-primary">Add candidate</button>
+          </form>
+
+          <div id="candidateList" class="candidate-list"></div>
+        </div>
+
+        <div class="panel">
+          <div class="panel-head">
+            <h2>All voters</h2>
+          </div>
+          <div id="userList" class="voter-list"></div>
+        </div>
+      </section>
+    </main>
+  </div>
 
   <script src="https://www.gstatic.com/firebasejs/9.22.1/firebase-app-compat.js"></script>
   <script src="https://www.gstatic.com/firebasejs/9.22.1/firebase-auth-compat.js"></script>
   <script src="https://www.gstatic.com/firebasejs/9.22.1/firebase-firestore-compat.js"></script>
-  <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
   <script src="admin.js"></script>
 </body>
 </html>

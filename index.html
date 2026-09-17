@@ -1,20 +1,28 @@
-<!DOCTYPE html>
+﻿<!DOCTYPE html>
 <html lang="en">
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <meta name="description" content="Vote Safe - Secure online voting for Dr Ogbonnaya Onu Polytechnic, Aba, Abia State." />
-  <title>Vote Safe | Dr Ogbonnaya Onu Polytechnic — Secure Student Voting</title>
+  <title>Vote Safe | Secure Campus Voting</title>
   <link rel="preconnect" href="https://fonts.googleapis.com" />
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=Space+Grotesk:wght@500;600;700&display=swap" rel="stylesheet" />
   <link rel="stylesheet" href="style.css" />
-  <link rel="stylesheet" href="assets/extra.css" />
-  <link rel="stylesheet" href="assets/ui-overrides.css" />
   <link rel="stylesheet" href="assets/auth.css" />
 </head>
 <body>
-  <div class="page-shell">
+  <div id="appLoader" class="app-loader">
+    <div class="loader-orb"></div>
+    <div class="loader-ring ring-one"></div>
+    <div class="loader-ring ring-two"></div>
+    <div class="loader-text">
+      <span>Vote</span><strong>Safe</strong>
+      <small>Secure voting portal</small>
+    </div>
+  </div>
+
+  <div class="page-shell" id="appMain">
     <header class="site-header" id="home">
       <a class="brand" href="#home" aria-label="Vote Safe home">
         <img src="assets/logo.svg" alt="Vote Safe logo" class="brand-logo" />
@@ -23,20 +31,20 @@
 
       <nav class="main-nav" aria-label="Main navigation">
         <a class="nav-link active" href="#home">Home</a>
-        <a class="nav-link" href="#how-it-works">How It Works</a>
+        <a class="nav-link" href="#how-it-works">How it works</a>
         <a class="nav-link" href="#security">Security</a>
         <a class="nav-link" href="#about">About</a>
       </nav>
 
       <div class="header-actions">
         <button class="icon-button" id="themeToggle" type="button" aria-label="Toggle dark mode" title="Toggle dark mode">◐</button>
-        <a class="button button-small button-outline" href="#vote">Start Voting <span>→</span></a>
+        <a class="button button-small button-outline" href="#vote">Start voting <span>→</span></a>
         <div class="header-user" id="headerUser" hidden>
           <button id="profileBtn" class="profile-btn" title="Open profile">
             <img id="headerAvatar" src="" alt="avatar" />
           </button>
         </div>
-        <a id="adminBtn" class="button button-small button-primary" href="admin.html" hidden>Admin Dashboard</a>
+        <a id="adminBtn" class="button button-small button-primary" href="admin.html" hidden>Admin dashboard</a>
       </div>
     </header>
 
@@ -44,10 +52,10 @@
       <section class="hero section-container">
         <div class="hero-copy">
           <div class="eyebrow"><span class="pulse-dot"></span> Secure • Transparent • Accessible</div>
-          <h1>Your voice.<br /><span>Your future at Dr Ogbonnaya Onu Polytechnic.</span></h1>
-          <p class="hero-text">A modern and secure way for students and staff of Dr Ogbonnaya Onu Polytechnic, Aba, Abia State to participate in campus elections. Your vote is encrypted, private, and counted with confidence.</p>
+          <h1>Your voice.<br /><span>Your future in motion.</span></h1>
+          <p class="hero-text">A modern and secure way for students and staff to participate in campus elections. Your vote is encrypted, private, and counted with confidence.</p>
           <div class="hero-actions">
-            <a class="button button-primary" href="#vote">Cast Your Vote <span>→</span></a>
+            <a class="button button-primary" href="#vote">Cast your vote <span>→</span></a>
             <a class="text-link" href="#how-it-works">Learn how it works <span>↗</span></a>
           </div>
           <div class="trust-row">
@@ -59,14 +67,15 @@
         </div>
 
         <div class="hero-visual" aria-label="Secure digital ballot illustration">
-          <div class="orb orb-one"></div><div class="orb orb-two"></div>
+          <div class="orb orb-one"></div>
+          <div class="orb orb-two"></div>
           <div class="shield-card glass-card">
             <div class="shield-icon">✓</div>
             <div><strong>Your vote is protected</strong><span>End-to-end encrypted</span></div>
             <span class="secure-badge">SECURE</span>
           </div>
           <div class="ballot-card glass-card">
-            <div class="card-topline"><span class="mini-logo">VS</span><div><strong>Dr Ogbonnaya Onu Polytechnic Election</strong><small>Ballot #DOP-2026-0917</small></div><span class="lock">⌑</span></div>
+            <div class="card-topline"><span class="mini-logo">VS</span><div><strong>Student election ballot</strong><small>Ballot #DOP-2026-0917</small></div><span class="lock">⌑</span></div>
             <div class="ballot-line"></div>
             <div class="ballot-option selected"><span class="radio-check">✓</span><span>Community First</span><b>01</b></div>
             <div class="ballot-option"><span class="radio-empty"></span><span>Future Forward</span><b>02</b></div>
@@ -79,11 +88,20 @@
       </section>
 
       <section class="stats-strip section-container" aria-label="Vote Safe statistics">
-        <div><strong>256-bit</strong><span>Data encryption</span></div><div><strong>99.9%</strong><span>System uptime</span></div><div><strong>100%</strong><span>Anonymous ballots</span></div><div><strong>24/7</strong><span>Monitoring</span></div>
+        <div><strong>256-bit</strong><span>Data encryption</span></div>
+        <div><strong>99.9%</strong><span>System uptime</span></div>
+        <div><strong>100%</strong><span>Anonymous ballots</span></div>
+        <div><strong>24/7</strong><span>Monitoring</span></div>
       </section>
 
       <section class="section-container info-section" id="how-it-works">
-        <div class="section-heading"><div><div class="eyebrow">A better way to participate</div><h2>Voting made simple.<br /><em>Security made serious.</em></h2></div><p>Vote Safe combines an easy-to-use experience with strong security measures so every eligible voter can participate with confidence.</p></div>
+        <div class="section-heading">
+          <div>
+            <div class="eyebrow">A better way to participate</div>
+            <h2>Voting made simple.<br /><em>Security made serious.</em></h2>
+          </div>
+          <p>Vote Safe combines an easy-to-use experience with strong security measures so every eligible voter can participate with confidence.</p>
+        </div>
         <div class="feature-grid">
           <article class="feature-card"><span class="feature-number">01</span><div class="feature-icon">⌁</div><h3>Verify your identity</h3><p>Confirm your identity through a secure verification step before accessing your ballot.</p><a href="#security">Explore security <span>→</span></a></article>
           <article class="feature-card featured"><span class="feature-number">02</span><div class="feature-icon">▣</div><h3>Cast your ballot</h3><p>Choose your candidate with a clear, accessible, and simple voting interface.</p><a href="#vote">Try a demo vote <span>→</span></a></article>
@@ -92,107 +110,134 @@
       </section>
 
       <section class="vote-section section-container" id="vote">
-        <div class="section-heading compact"><div><div class="eyebrow">Dr Ogbonnaya Onu Polytechnic • Demo election • 2026</div><h2>Make your choice</h2></div><div class="election-status"><span class="live-dot"></span> Voting is open <small>Closes today at 8:00 PM</small></div></div>
-        <div class="ballot-panel">
-          <div class="ballot-panel-head"><div><h3>Who should represent your community?</h3><p>Select one candidate. You can review your choice before submitting.</p></div><span class="step-label">STEP 1 <b>OF 2</b></span></div>
-          <div class="candidate-grid">
-            <button class="candidate-card" type="button" data-candidate="Amina Okafor"><img class="candidate-avatar-img" src="assets/amina.jpg" alt="Amina Okafor" /><span class="candidate-details"><strong>Amina Okafor</strong><small>Community First</small></span><span class="candidate-radio"></span></button>
-            <button class="candidate-card" type="button" data-candidate="Daniel Brooks"><img class="candidate-avatar-img" src="assets/daniel.jpg" alt="Daniel Brooks" /><span class="candidate-details"><strong>Daniel Brooks</strong><small>Future Forward</small></span><span class="candidate-radio"></span></button>
-            <button class="candidate-card" type="button" data-candidate="Ike Praise"><img class="candidate-avatar-img" src="assets/ike-praise.jpg" alt="Ike Praise" /><span class="candidate-details"><strong>Ike Praise</strong><small>People's Choice</small></span><span class="candidate-radio"></span></button>
+        <div class="section-heading compact">
+          <div>
+            <div class="eyebrow">Dr Ogbonnaya Onu Polytechnic • Live election • 2026</div>
+            <h2>Make your choice</h2>
           </div>
-          <div class="ballot-footer"><span class="privacy-note">⌑ Your selection is private and encrypted</span><button class="button button-primary" id="reviewVote" type="button" disabled>Review selection <span>→</span></button></div>
+          <div class="election-status"><span class="live-dot"></span> Voting is open <small>Closes today at 8:00 PM</small></div>
+        </div>
+
+        <div class="ballot-panel">
+          <div class="ballot-panel-head">
+            <div>
+              <h3>Who should represent your community?</h3>
+              <p>Select one candidate. Review the choice before submitting.</p>
+            </div>
+            <span class="step-label">STEP 1 <b>OF 2</b></span>
+          </div>
+
+          <div class="candidate-grid" id="candidateGrid"></div>
+
+          <div class="ballot-footer">
+            <span class="privacy-note">⌑ Your selection is private and encrypted</span>
+            <button class="button button-primary" id="reviewVote" type="button" disabled>Review selection <span>→</span></button>
+          </div>
         </div>
       </section>
 
       <section class="security-section section-container" id="security">
-        <div class="security-copy"><div class="eyebrow">Protection by design</div><h2>Built on a foundation<br /><em>of trust.</em></h2><p>Vote Safe uses multiple layers of protection to keep your identity and ballot secure from the moment you sign in to the moment your vote is counted.</p><a class="text-link" href="#about">Read our security promise <span>↗</span></a></div>
-        <div class="security-list"><div class="security-item"><span class="security-list-icon">⌑</span><div><strong>End-to-end encryption</strong><p>Your ballot is encrypted before it leaves your device.</p></div><span class="security-check">✓</span></div><div class="security-item"><span class="security-list-icon">◉</span><div><strong>Anonymous by default</strong><p>Your identity is separated from your vote.</p></div><span class="security-check">✓</span></div><div class="security-item"><span class="security-list-icon">◌</span><div><strong>Transparent verification</strong><p>Every vote can be validated without revealing who cast it.</p></div><span class="security-check">✓</span></div></div>
+        <div class="security-copy">
+          <div class="eyebrow">Protection by design</div>
+          <h2>Built on a foundation<br /><em>of trust.</em></h2>
+          <p>Vote Safe uses multiple layers of protection to keep your identity and ballot secure from the moment you sign in to the moment your vote is counted.</p>
+          <a class="text-link" href="#about">Read our security promise <span>↗</span></a>
+        </div>
+        <div class="security-list">
+          <div class="security-item"><span class="security-list-icon">⌑</span><div><strong>End-to-end encryption</strong><p>Your ballot is encrypted before it leaves your device.</p></div><span class="security-check">✓</span></div>
+          <div class="security-item"><span class="security-list-icon">◉</span><div><strong>Anonymous by default</strong><p>Your identity is separated from your vote.</p></div><span class="security-check">✓</span></div>
+          <div class="security-item"><span class="security-list-icon">◌</span><div><strong>Transparent verification</strong><p>Every vote can be validated without revealing who cast it.</p></div><span class="security-check">✓</span></div>
+        </div>
       </section>
 
-      <section class="cta-section section-container" id="about"><div><div class="eyebrow">Your participation matters</div><h2>Ready to make<br /><em>your voice heard?</em></h2></div><a class="button button-light" href="#vote">Start voting now <span>→</span></a></section>
+      <section class="cta-section section-container" id="about">
+        <div>
+          <div class="eyebrow">Your participation matters</div>
+          <h2>Ready to make<br /><em>your voice heard?</em></h2>
+        </div>
+        <a class="button button-light" href="#vote">Start voting now <span>→</span></a>
+      </section>
     </main>
 
-    <footer class="site-footer"><div class="footer-brand"><a class="brand" href="#home"><img src="assets/logo.svg" alt="Vote Safe logo" class="brand-logo" /><span>Vote<span class="brand-accent">Safe</span></span></a><p>Secure elections — Dr Ogbonnaya Onu Polytechnic, Aba, Abia State.</p></div><div class="footer-links"><a href="#security">Privacy</a><a href="#security">Security</a><a href="#about">Accessibility</a><a href="#about">Contact</a></div><p class="copyright">© 2026 Vote Safe — Dr Ogbonnaya Onu Polytechnic, Aba, Abia State. School project demonstration.</p></footer>
+    <footer class="site-footer">
+      <div class="footer-brand">
+        <a class="brand" href="#home"><img src="assets/logo.svg" alt="Vote Safe logo" class="brand-logo" /><span>Vote<span class="brand-accent">Safe</span></span></a>
+        <p>Secure elections — Dr Ogbonnaya Onu Polytechnic, Aba, Abia State.</p>
+      </div>
+      <div class="footer-links">
+        <a href="#security">Privacy</a>
+        <a href="#security">Security</a>
+        <a href="#about">Accessibility</a>
+        <a href="#about">Contact</a>
+      </div>
+      <p class="copyright">© 2026 Vote Safe — Dr Ogbonnaya Onu Polytechnic, Aba, Abia State.</p>
+    </footer>
   </div>
 
-  <div class="modal-backdrop" id="reviewModal" aria-hidden="true"><div class="modal" role="dialog" aria-modal="true" aria-labelledby="modalTitle"><button class="modal-close" id="closeModal" type="button" aria-label="Close dialog">×</button><div class="modal-icon">✓</div><div class="eyebrow">Ready to submit</div><h2 id="modalTitle">Review your vote</h2><p>You selected <strong id="selectedCandidate">—</strong>. Your ballot will be encrypted and submitted anonymously.</p><div class="encryption-status"><span class="spinner-check">✓</span><div><strong>Encryption ready</strong><small>RSA-2048 + AES-256 simulation active</small></div><span class="status-online">ONLINE</span></div><div class="modal-actions"><button class="button button-outline" id="editVote" type="button">Go back</button><button class="button button-primary" id="submitVote" type="button">Encrypt & submit <span>→</span></button></div></div></div>
-  <div class="toast" id="toast" role="status" aria-live="polite"><span>✓</span><div><strong>Vote submitted securely</strong><small>Your anonymous ballot has been recorded.</small></div></div>
-  <!-- Firebase SDKs -->
-  <script src="https://www.gstatic.com/firebasejs/9.22.1/firebase-app-compat.js"></script>
-  <script src="https://www.gstatic.com/firebasejs/9.22.1/firebase-auth-compat.js"></script>
-  <script src="https://www.gstatic.com/firebasejs/9.22.1/firebase-firestore-compat.js"></script>
-  <script src="https://www.gstatic.com/firebasejs/9.22.1/firebase-functions-compat.js"></script>
-
-  <!-- Login / Auth UI -->
-  <div class="auth-overlay" id="authOverlay" hidden>
-      <div class="auth-card">
-      <div class="auth-head"><h2>Welcome to Vote Safe</h2><p id="authNotice">Sign in or create an account to continue.</p></div>
-      <div class="auth-tabs">
-        <button id="showSignIn" class="button button-outline">Sign in</button>
-        <button id="showSignUp" class="button button-outline">Create account</button>
+  <div class="modal-backdrop" id="reviewModal" aria-hidden="true">
+    <div class="modal" role="dialog" aria-modal="true" aria-labelledby="modalTitle">
+      <button class="modal-close" id="closeModal" type="button" aria-label="Close dialog">×</button>
+      <div class="modal-icon">✓</div>
+      <div class="eyebrow">Ready to submit</div>
+      <h2 id="modalTitle">Review your vote</h2>
+      <p>You selected <strong id="selectedCandidate">—</strong>. Your ballot will be encrypted and submitted anonymously.</p>
+      <div class="encryption-status">
+        <span class="spinner-check">✓</span>
+        <div><strong>Encryption ready</strong><small>RSA-2048 + AES-256 simulation active</small></div>
+        <span class="status-online">ONLINE</span>
       </div>
+      <div class="modal-actions">
+        <button class="button button-outline" id="editVote" type="button">Go back</button>
+        <button class="button button-primary" id="submitVote" type="button">Encrypt & submit <span>→</span></button>
+      </div>
+    </div>
+  </div>
+
+  <div class="toast" id="toast" role="status" aria-live="polite">
+    <span>✓</span>
+    <div><strong>Vote submitted securely</strong><small>Your anonymous ballot has been recorded.</small></div>
+  </div>
+
+  <div class="auth-overlay" id="authOverlay" hidden>
+    <div class="auth-card">
+      <div class="auth-head">
+        <h2>Welcome to Vote Safe</h2>
+        <p id="authNotice">Sign in or create an account to continue.</p>
+      </div>
+
+      <div class="auth-tabs">
+        <button id="showSignIn" class="button button-outline active" type="button">Sign in</button>
+        <button id="showSignUp" class="button button-outline" type="button">Create account</button>
+      </div>
+
       <div class="auth-forms">
         <div class="forms-viewport">
           <div class="forms-slider" id="formsSlider">
             <form id="signInForm" class="auth-form" aria-label="Sign in form">
-              <div class="field"><label for="signInEmail">Email</label><input id="signInEmail" type="email" placeholder="you@school.edu" required/></div>
-              <div class="field password-field"><label for="signInPassword">Password</label><input id="signInPassword" type="password" placeholder="••••••••" required/><button type="button" class="password-toggle" aria-label="Toggle password visibility">👁</button></div>
-              <div class="auth-actions">
-                <button id="signInBtn" type="button" class="button button-primary button-animated">Sign in</button>
-              </div>
+              <div class="field"><label for="signInEmail">Email</label><input id="signInEmail" type="email" placeholder="you@school.edu" required /></div>
+              <div class="field password-field"><label for="signInPassword">Password</label><input id="signInPassword" type="password" placeholder="••••••••" required /><button type="button" class="password-toggle" aria-label="Toggle password visibility">👁</button></div>
+              <div class="auth-actions"><button id="signInBtn" type="button" class="button button-primary button-animated">Sign in</button></div>
             </form>
 
             <form id="signUpForm" class="auth-form" aria-label="Sign up form">
-              <div class="field"><label for="signUpDisplayName">Full name</label><input id="signUpDisplayName" type="text" placeholder="Your name" required/></div>
-              <div class="field"><label for="signUpEmail">Email</label><input id="signUpEmail" type="email" placeholder="you@school.edu" required/></div>
-              <div class="field password-field"><label for="signUpPassword">Password</label><input id="signUpPassword" type="password" placeholder="••••••••" required/><button type="button" class="password-toggle" aria-label="Toggle password visibility">👁</button></div>
-              <div class="auth-actions">
-                <button id="signUpBtn" type="button" class="button button-primary button-animated">Create account</button>
-              </div>
+              <div class="field"><label for="signUpDisplayName">Full name</label><input id="signUpDisplayName" type="text" placeholder="Your name" required /></div>
+              <div class="field"><label for="signUpEmail">Email</label><input id="signUpEmail" type="email" placeholder="you@school.edu" required /></div>
+              <div class="field password-field"><label for="signUpPassword">Password</label><input id="signUpPassword" type="password" placeholder="••••••••" required /><button type="button" class="password-toggle" aria-label="Toggle password visibility">👁</button></div>
+              <div class="field password-field"><label for="signUpConfirmPassword">Confirm password</label><input id="signUpConfirmPassword" type="password" placeholder="Confirm password" required /><button type="button" class="password-toggle" aria-label="Toggle password visibility">👁</button></div>
+              <div class="auth-actions"><button id="signUpBtn" type="button" class="button button-primary button-animated">Create account</button></div>
             </form>
           </div>
         </div>
       </div>
-      <div class="auth-foot"><button id="signOutBtn" class="text-link" hidden>Sign out</button></div>
+
+      <div class="auth-foot"><button id="signOutBtn" class="text-link" type="button" hidden>Sign out</button></div>
     </div>
   </div>
 
-  <!-- Admin panel (hidden for normal users) -->
-  <section id="adminPanel" class="section-container admin-panel" hidden>
-    <div class="section-heading"><h2>Admin Dashboard</h2><div class="eyebrow">Admin: Real-time activity & votes</div></div>
-    <div class="admin-grid">
-      <div class="admin-column">
-        <h3>Recent votes</h3>
-        <div id="adminVotes" class="admin-log"></div>
-      </div>
-      <div class="admin-column">
-        <h3>Announcements</h3>
-        <div id="adminAnnouncements" class="admin-log"></div>
-        <textarea id="announcementText" rows="3" placeholder="Write announcement..."></textarea>
-        <button id="announceBtn" class="button button-primary">Publish announcement</button>
-      </div>
-    </div>
-  </section>
-
-  <!-- Profile modal -->
-  <div class="modal-backdrop" id="profileModal" aria-hidden="true" hidden>
-    <div class="modal profile-modal" role="dialog" aria-modal="true" aria-labelledby="profileTitle">
-      <button class="modal-close" id="closeProfile" type="button" aria-label="Close">×</button>
-      <div class="profile-top">
-        <img id="profileAvatar" src="" alt="avatar" class="profile-avatar-large" hidden />
-        <div>
-          <h2 id="profileName">—</h2>
-          <p id="profileEmail">—</p>
-        </div>
-      </div>
-      <form id="profileForm" class="profile-form">
-        <label>Display name<input id="profileDisplayName" type="text" /></label>
-        <label>Choose avatar color<input id="avatarColor" type="color" value="#159b63" /></label>
-        <div class="profile-actions"><button id="saveProfile" class="button button-primary" type="button">Save</button><button id="closeProfileFooter" class="button button-outline" type="button">Close</button></div>
-      </form>
-    </div>
-  </div>
-
+  <script src="https://www.gstatic.com/firebasejs/9.22.1/firebase-app-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/9.22.1/firebase-auth-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/9.22.1/firebase-firestore-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/9.22.1/firebase-functions-compat.js"></script>
   <script src="script.js"></script>
 </body>
 </html>
