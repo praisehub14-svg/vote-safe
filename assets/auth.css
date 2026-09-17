@@ -1,6 +1,7 @@
 /* Auth form modern styles and button animations */
-.auth-overlay{position:fixed;inset:0;display:flex;align-items:center;justify-content:center;background:linear-gradient(180deg,rgba(6,28,18,.35),rgba(6,28,18,.5));backdrop-filter:blur(4px);z-index:60}
-.auth-card{width:420px;max-width:calc(100% - 48px);background:linear-gradient(180deg,rgba(255,255,255,0.95),#fff);border-radius:16px;padding:22px;box-shadow:0 20px 40px rgba(13,49,30,.12);border:1px solid rgba(9,36,25,.04)}
+.auth-overlay{position:fixed;inset:0;display:flex;align-items:center;justify-content:center;background:linear-gradient(180deg,rgba(6,28,18,.35),rgba(6,28,18,.5));backdrop-filter:blur(6px);z-index:60;transition:opacity .28s ease}
+.auth-overlay[hidden]{display:none}
+.auth-card{width:440px;max-width:calc(100% - 48px);background:linear-gradient(180deg,rgba(255,255,255,0.98),#fff);border-radius:14px;padding:22px;box-shadow:0 20px 40px rgba(8,40,24,.14);border:1px solid rgba(9,36,25,.04);position:relative;overflow:hidden}
 .auth-head h2{margin:0 0 6px;font-size:20px}
 .auth-head p{margin:0 0 12px;color:var(--muted);font-size:13px}
 .auth-tabs{display:flex;gap:8px;margin-bottom:12px}
@@ -38,6 +39,19 @@
 .button-animated{position:relative;overflow:hidden}
 .button-animated::after{content:'';position:absolute;inset:0;background:linear-gradient(120deg,rgba(255,255,255,0.12),rgba(255,255,255,0));transform:translateX(-100%);transition:transform .6s cubic-bezier(.2,.9,.2,1)}
 .button-animated:hover::after{transform:translateX(0)}
+
+/* loading spinner for buttons */
+.button{position:relative}
+.button.loading{pointer-events:none;opacity:.95}
+.button.loading::after{content:'';position:absolute;right:12px;top:50%;transform:translateY(-50%);width:16px;height:16px;border-radius:50%;border:2px solid rgba(255,255,255,.28);border-top-color:rgba(255,255,255,0.92);animation:spin .9s linear infinite}
+@keyframes spin{to{transform:translateY(-50%) rotate(360deg)}}
+
+/* subtle open/close animation for the card */
+.auth-card.fade-out{animation:cardOut .36s forwards}
+@keyframes cardOut{to{opacity:0;transform:translateY(-12px) scale(.985)}}
+
+/* small polish for active tab */
+.auth-tabs .button.active{background:rgba(21,150,99,.08);border-color:rgba(21,150,99,.12)}
 
 /* toast tweaks for success messages */
 .toast{position:fixed;right:20px;bottom:20px;background:linear-gradient(90deg,#0f3d2a,#157a4a);color:white;padding:12px 16px;border-radius:12px;display:flex;gap:12px;align-items:center;transform:translateY(16px) scale(.98);opacity:0;pointer-events:none;transition:opacity .25s,transform .25s}

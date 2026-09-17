@@ -106,7 +106,7 @@ async function submitVoteToFirestore() {
   const user = auth.currentUser;
   if (!user) {
     authNotice.textContent = 'You must sign in before submitting a vote.';
-    authOverlay.hidden = false;
+    showAuthOverlay();
     return;
   }
 
@@ -205,23 +205,63 @@ document.querySelectorAll('.password-toggle').forEach((btn) => {
     }
   });
 });
+// helpers: show/hide auth overlay with animation
+const authCard = document.querySelector('.auth-card');
+function showAuthOverlay() {
+  if (!authOverlay) return;
+  authOverlay.hidden = false;
+  authCard?.classList.remove('fade-out');
+  document.body.style.overflow = 'hidden';
+}
+function closeAuthOverlay() {
+  if (!authOverlay) return;
+  authCard?.classList.add('fade-out');
+  setTimeout(() => {
+    authOverlay.hidden = true;
+    authCard?.classList.remove('fade-out');
+    document.body.style.overflow = '';
+  }, 360);
+}
+
+function setButtonLoading(btn, loading, text) {
+  if (!btn) return;
+  if (loading) {
+    btn.dataset.orig = btn.innerHTML;
+    btn.classList.add('loading');
+    btn.disabled = true;
+    btn.innerHTML = text || btn.innerText;
+  } else {
+    btn.classList.remove('loading');
+    btn.disabled = false;
+    if (btn.dataset.orig) { btn.innerHTML = btn.dataset.orig; delete btn.dataset.orig; }
+  }
+}
+
+function showToast(title, small, ms = 3000) {
+  const tTitle = toast.querySelector('strong');
+  const tSmall = toast.querySelector('small');
+  if (tTitle) tTitle.textContent = title;
+  if (tSmall) tSmall.textContent = small;
+  toast.classList.add('show');
+  setTimeout(() => toast.classList.remove('show'), ms);
+}
 
 signInBtn.addEventListener('click', async () => {
+  setButtonLoading(signInBtn, true, 'Signing in…');
   try {
     await auth.signInWithEmailAndPassword(signInEmail.value, signInPassword.value);
-    // close overlay immediately on success
-    authOverlay.hidden = true;
     authNotice.textContent = 'Signed in';
-    toast.querySelector('strong').textContent = 'Signed in';
-    toast.querySelector('small').textContent = 'Welcome back.';
-    toast.classList.add('show');
-    setTimeout(() => toast.classList.remove('show'), 2000);
+    showToast('Signed in', 'Welcome back.', 2000);
+    closeAuthOverlay();
   } catch (err) {
     authNotice.textContent = err.message;
+  } finally {
+    setButtonLoading(signInBtn, false);
   }
 });
 
 signUpBtn.addEventListener('click', async () => {
+  setButtonLoading(signUpBtn, true, 'Creating…');
   try {
     const displayNameVal = signUpDisplayName?.value || '';
     const cred = await auth.createUserWithEmailAndPassword(signUpEmail.value, signUpPassword.value);
@@ -230,17 +270,14 @@ signUpBtn.addEventListener('click', async () => {
     const initials = initialsFromName(displayNameVal || cred.user.email || '');
     const avatar = generateAvatarDataUrl(initials, color);
     await db.collection('users').doc(cred.user.uid).set({ email: cred.user.email, displayName: displayNameVal, avatarColor: color, avatar, createdAt: firebase.firestore.FieldValue.serverTimestamp() });
-    // show success, close immediately and notify
+    // show success, close with animation and notify
     authNotice.textContent = 'Account created — signing in...';
-    authOverlay.hidden = true;
-    const toastTitle = toast.querySelector('strong');
-    const toastSmall = toast.querySelector('small');
-    if (toastTitle) toastTitle.textContent = 'Account created';
-    if (toastSmall) toastSmall.textContent = 'Welcome — signing in.';
-    toast.classList.add('show');
-    setTimeout(() => toast.classList.remove('show'), 3000);
+    showToast('Account created', 'Welcome — signing in.', 3000);
+    closeAuthOverlay();
   } catch (err) {
     authNotice.textContent = err.message;
+  } finally {
+    setButtonLoading(signUpBtn, false);
   }
 });
 
@@ -289,14 +326,13 @@ function attachAdminListeners() {
 auth.onAuthStateChanged(async (user) => {
   if (!user) {
     // show auth overlay and hide main site
-    authOverlay.hidden = false;
+    showAuthOverlay();
     adminPanel.hidden = true;
     document.querySelector('main').hidden = true;
     signOutBtn.hidden = true;
     return;
   }
-
-  authOverlay.hidden = true;
+  closeAuthOverlay();
   document.querySelector('main').hidden = false;
   signOutBtn.hidden = false;
 
