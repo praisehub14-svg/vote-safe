@@ -1,0 +1,29 @@
+/* Auth form modern styles and button animations */
+.auth-overlay{position:fixed;inset:0;display:flex;align-items:center;justify-content:center;background:linear-gradient(180deg,rgba(6,28,18,.35),rgba(6,28,18,.5));backdrop-filter:blur(4px);z-index:60}
+.auth-card{width:420px;max-width:calc(100% - 48px);background:linear-gradient(180deg,rgba(255,255,255,0.95),#fff);border-radius:16px;padding:22px;box-shadow:0 20px 40px rgba(13,49,30,.12);border:1px solid rgba(9,36,25,.04)}
+.auth-head h2{margin:0 0 6px;font-size:20px}
+.auth-head p{margin:0 0 12px;color:var(--muted);font-size:13px}
+.auth-tabs{display:flex;gap:8px;margin-bottom:12px}
+.auth-tabs .button{padding:8px 12px;border-radius:10px;font-size:13px}
+.auth-forms{margin-top:6px}
+.auth-form{display:flex;flex-direction:column;gap:12px}
+.auth-form .field{display:flex;flex-direction:column}
+.auth-form label{font-size:13px;color:var(--muted);margin-bottom:6px}
+.auth-form input{padding:10px 12px;border-radius:10px;border:1px solid var(--line);font-size:14px;background:transparent}
+.auth-form input:focus{outline:none;border-color:var(--green);box-shadow:0 6px 18px rgba(21,150,99,.08)}
+
+/* Animated primary button */
+.button-primary{background:linear-gradient(90deg,var(--green),var(--green-dark));color:var(--white)}
+.button-primary:focus{box-shadow:0 8px 28px rgba(21,150,99,.18)}
+.button-animated{position:relative;overflow:hidden}
+.button-animated::after{content:'';position:absolute;inset:0;background:linear-gradient(120deg,rgba(255,255,255,0.12),rgba(255,255,255,0));transform:translateX(-100%);transition:transform .6s cubic-bezier(.2,.9,.2,1)}
+.button-animated:hover::after{transform:translateX(0)}
+
+/* toast tweaks for success messages */
+.toast{position:fixed;right:20px;bottom:20px;background:linear-gradient(90deg,#0f3d2a,#157a4a);color:white;padding:12px 16px;border-radius:12px;display:flex;gap:12px;align-items:center;transform:translateY(16px) scale(.98);opacity:0;pointer-events:none;transition:opacity .25s,transform .25s}
+.toast.show{opacity:1;transform:translateY(0) scale(1);pointer-events:auto}
+.toast small{display:block;color:rgba(255,255,255,.85);font-weight:500}
+
+/* subtle form close animation */
+.auth-card.fade-out{animation:cardOut .36s forwards}
+@keyframes cardOut{to{opacity:0;transform:translateY(-12px) scale(.98)}}

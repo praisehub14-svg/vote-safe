@@ -201,6 +201,22 @@ signUpBtn.addEventListener('click', async () => {
     const initials = initialsFromName(displayNameVal || cred.user.email || '');
     const avatar = generateAvatarDataUrl(initials, color);
     await db.collection('users').doc(cred.user.uid).set({ email: cred.user.email, displayName: displayNameVal, avatarColor: color, avatar, createdAt: firebase.firestore.FieldValue.serverTimestamp() });
+    // show success, auto-close form and notify
+    authNotice.textContent = 'Account created — signing in...';
+    // add small animation and close
+    const card = document.querySelector('.auth-card');
+    if (card) card.classList.add('fade-out');
+    setTimeout(() => {
+      authOverlay.hidden = true;
+      if (card) card.classList.remove('fade-out');
+      // show toast
+      const toastTitle = toast.querySelector('strong');
+      const toastSmall = toast.querySelector('small');
+      if (toastTitle) toastTitle.textContent = 'Account created';
+      if (toastSmall) toastSmall.textContent = 'You are signed in and ready.';
+      toast.classList.add('show');
+      setTimeout(() => toast.classList.remove('show'), 3000);
+    }, 650);
   } catch (err) {
     authNotice.textContent = err.message;
   }
