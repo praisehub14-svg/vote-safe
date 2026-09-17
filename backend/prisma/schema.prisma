@@ -1,0 +1,44 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+model Election {
+  id        Int       @id @default(autoincrement())
+  title     String
+  startsAt  DateTime
+  endsAt    DateTime
+  publicKey String?   @db.Text
+  candidates Candidate[]
+  ballots   Ballot[]
+}
+
+model Candidate {
+  id         Int      @id @default(autoincrement())
+  election   Election @relation(fields: [electionId], references: [id])
+  electionId Int
+  name       String
+  party      String?
+  order      Int?
+}
+
+model Ballot {
+  id         Int      @id @default(autoincrement())
+  election   Election @relation(fields: [electionId], references: [id])
+  electionId Int
+  ciphertext String   @db.Text
+  encKey     String   @db.Text
+  submittedAt DateTime @default(now())
+  meta       String?  @db.Text
+}
+
+model Voter {
+  id        Int     @id @default(autoincrement())
+  studentId String  @unique
+  name      String?
+  allowed   Boolean @default(false)
+}

@@ -1,0 +1,36 @@
+:root{--overlay-bg:rgba(4,18,12,.45)}
+/* Modern auth overlay and profile styles */
+.auth-overlay{position:fixed;inset:0;display:flex;align-items:center;justify-content:center;background:var(--overlay-bg);backdrop-filter:blur(6px);z-index:1200}
+.auth-card{width:420px;background:var(--white);border-radius:14px;padding:22px;box-shadow:0 22px 55px rgba(9,77,46,.13);color:var(--ink)}
+.auth-head h2{margin:0 0 6px;font-size:20px}
+.auth-head p{margin:0 0 14px;color:var(--muted)}
+.auth-form .field{margin-bottom:12px}
+.auth-form label{display:block;font-size:13px;color:var(--muted);margin-bottom:6px}
+.auth-form input{width:100%;padding:10px 12px;border-radius:10px;border:1px solid var(--line);font-size:15px}
+.auth-actions{display:flex;gap:10px;justify-content:flex-end;margin-top:8px}
+
+.header-user{display:flex;align-items:center}
+.profile-btn{border:0;background:transparent;padding:0;border-radius:999px;overflow:hidden;width:42px;height:42px;display:inline-flex;align-items:center;justify-content:center;cursor:pointer}
+.profile-btn img{width:100%;height:100%;object-fit:cover;display:block}
+
+/* Profile modal */
+.modal.profile-modal{width:480px;border-radius:12px;padding:20px;box-shadow:0 22px 55px rgba(9,77,46,.13);background:var(--white);}
+.profile-top{display:flex;gap:14px;align-items:center;margin-bottom:16px}
+.profile-avatar-large{width:72px;height:72px;border-radius:14px;object-fit:cover}
+.profile-form label{display:flex;flex-direction:column;gap:8px;margin-bottom:12px}
+.profile-form input[type=text]{padding:10px;border-radius:10px;border:1px solid var(--line)}
+.profile-actions{display:flex;gap:10px;justify-content:flex-end}
+
+/* Admin panel distinct styling */
+.admin-panel{background:linear-gradient(180deg,rgba(5,30,20,0.03),transparent);border-radius:14px;padding:18px;margin-top:18px}
+.admin-grid{display:flex;gap:18px}
+.admin-column{flex:1;background:linear-gradient(180deg,#fff, #f7fff9);border-radius:12px;padding:12px;min-height:160px}
+.admin-log{max-height:320px;overflow:auto}
+.admin-log-item{padding:8px;border-bottom:1px dashed var(--line);font-size:13px;color:var(--muted)}
+
+/* responsive small screens */
+@media (max-width:720px){
+  .auth-card{width:92%}
+  .modal.profile-modal{width:92%}
+  .admin-grid{flex-direction:column}
+}

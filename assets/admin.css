@@ -1,0 +1,31 @@
+:root{--admin-bg:#071617;--accent:#29c77d;--muted:#9fbfb0}
+body{margin:0;font-family:Inter,Arial,sans-serif;background:linear-gradient(180deg,#f6fffb,#ecfff4);color:#05221a}
+.admin-header{display:flex;align-items:center;justify-content:space-between;padding:18px 28px;background:linear-gradient(90deg,#092420,#08332a);color:white}
+.admin-header .brand{display:flex;align-items:center;gap:14px}
+.admin-header img{height:44px}
+.admin-main{padding:28px;max-width:1200px;margin:0 auto}
+.admin-top{display:flex;gap:18px;margin-bottom:22px}
+.stat-card{flex:1;background:linear-gradient(180deg,#062b22,#09372a);color:white;padding:18px;border-radius:12px;box-shadow:0 10px 30px rgba(2,20,16,.12)}
+.stat-card h3{margin:0;font-size:13px;color:var(--muted)}
+.stat-value{font-size:34px;font-weight:800;margin-top:8px}
+.live-activity{max-height:160px;overflow:auto;margin-top:12px}
+.activity-item{padding:8px;border-radius:8px;background:rgba(255,255,255,0.03);margin-bottom:8px;font-size:13px}
+.announce-list{max-height:160px;overflow:auto;margin-top:10px}
+.announce-item{padding:8px;border-radius:8px;background:rgba(255,255,255,0.03);margin-bottom:8px;font-size:13px}
+
+.chart-section{background:white;padding:18px;border-radius:12px;box-shadow:0 12px 30px rgba(6,43,34,.06);margin-bottom:18px}
+.bar-chart{display:flex;flex-direction:column;gap:10px}
+.bar-row{display:flex;align-items:center;gap:12px}
+.bar-label{width:180px;font-weight:700;color:#0b2b20}
+.bar-wrap{flex:1;background:#eefaf3;border-radius:10px;padding:6px}
+.bar{height:34px;background:linear-gradient(90deg,var(--accent),#087348);border-radius:8px;color:white;padding:6px 12px;display:inline-flex;align-items:center;font-weight:700}
+
+.announce-section{display:flex;flex-direction:column;gap:8px}
+.announce-section textarea{width:100%;min-height:90px;padding:12px;border-radius:10px;border:1px solid #e6f6ef}
+.announce-actions{display:flex;gap:10px;justify-content:flex-end}
+
+.button{border:0;border-radius:9px;padding:10px 14px;background:#fff;color:#05221a;cursor:pointer}
+.button.button-primary{background:var(--accent);color:white}
+.button.button-outline{background:transparent;border:1px solid rgba(255,255,255,0.12);color:white}
+
+@media(max-width:900px){.admin-top{flex-direction:column}}

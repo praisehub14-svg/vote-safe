@@ -1,0 +1,48 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <title>Admin Dashboard — Vote Safe</title>
+  <link rel="stylesheet" href="assets/admin.css" />
+</head>
+<body>
+  <header class="admin-header">
+    <div class="brand"><img src="assets/logo.svg" alt="Vote Safe" /><h1>Admin Dashboard</h1></div>
+    <div class="admin-actions"><button id="signOutAdmin" class="button">Sign out</button></div>
+  </header>
+
+  <main class="admin-main">
+    <section class="admin-top">
+      <div class="stat-card">
+        <h3>Total votes</h3>
+        <div id="totalVotes" class="stat-value">0</div>
+      </div>
+      <div class="stat-card">
+        <h3>Live Activity</h3>
+        <div id="liveActivity" class="live-activity"></div>
+      </div>
+      <div class="stat-card">
+        <h3>Announcements</h3>
+        <div id="announceList" class="announce-list"></div>
+      </div>
+    </section>
+
+    <section class="chart-section">
+      <h2>Votes by candidate</h2>
+      <div id="chart" class="bar-chart"></div>
+    </section>
+
+    <section class="announce-section">
+      <textarea id="announceText" placeholder="Write announcement or declare winner..."></textarea>
+      <div class="announce-actions"><button id="publishAnnounce" class="button button-primary">Publish</button><button id="declareWinner" class="button button-outline">Declare Winner</button></div>
+    </section>
+  </main>
+
+  <script src="https://www.gstatic.com/firebasejs/9.22.1/firebase-app-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/9.22.1/firebase-auth-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/9.22.1/firebase-firestore-compat.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+  <script src="admin.js"></script>
+</body>
+</html>

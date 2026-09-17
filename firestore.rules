@@ -1,0 +1,74 @@
+rules_version = '2';
+service cloud.firestore {
+  match /databases/{database}/documents {
+
+    function isSignedIn() {
+      return request.auth != null;
+    }
+
+    function isAdmin() {
+      return isSignedIn() && request.auth.token.email == 'praisehub14@gmail.com';
+    }
+
+    // Votes are stored at /votes/{uid} where the document ID == voter's uid.
+    // This allows security rules to enforce one vote per authenticated user.
+    match /votes/{uid} {
+      // Allow creating a vote only if the requester is signed in, the
+      // document ID matches their uid, and no vote already exists for them.
+      allow create: if isSignedIn()
+                    && request.auth.uid == uid
+                    && request.resource.data.uid == uid
+                    && request.resource.data.keys().hasOnly(['uid', 'candidate', 'timestamp', 'email'])
+                    && request.resource.data.candidate is string
+                    && !exists(/databases/$(database)/documents/votes/$(uid));
+
+      // Users may read their own vote; admin may read all votes.
+      allow get, list: if isSignedIn() && (isAdmin() || request.auth.uid == uid);
+
+      // Only admin can modify or delete votes (fixes, audits).
+      allow update, delete: if isAdmin();
+    }
+
+    // User profile documents
+    match /users/{userId} {
+      allow create: if isSignedIn()
+                    && request.auth.uid == userId
+                    && request.resource.data.email == request.auth.token.email;
+
+      allow get, list: if isSignedIn() && (isAdmin() || request.auth.uid == userId);
+
+      allow update: if isSignedIn() && request.auth.uid == userId;
+      allow delete: if isAdmin();
+    }
+
+    // Admin-only announcements (admin can create/update/delete; all signed-in users can read)
+    match /announcements/{id} {
+      allow read: if isSignedIn();
+      allow create, update, delete: if isAdmin()
+        && request.resource.data.keys().hasOnly(['text', 'author', 'timestamp'])
+        && request.resource.data.author == request.auth.token.email
+        && request.resource.data.text is string;
+    }
+
+    // Events are primarily for admin consumption. Allow clients to create
+    // a limited event for their own vote submission; admin can read all.
+    match /events/{eventId} {
+      allow create: if isSignedIn() && (
+        // admin may write any event
+        isAdmin()
+        || (
+          // user may write a vote_submitted event for themselves with limited schema
+          request.resource.data.type == 'vote_submitted'
+          && request.resource.data.uid == request.auth.uid
+          && request.resource.data.candidate is string
+          && request.resource.data.keys().hasOnly(['type','uid','candidate','time'])
+        )
+      );
+
+      allow read: if isSignedIn() && isAdmin();
+      allow update, delete: if isAdmin();
+    }
+
+    // Fallback: deny everything else by default.
+  }
+}

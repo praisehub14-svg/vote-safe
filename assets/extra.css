@@ -1,0 +1,10 @@
+/* VoteSafe: extra styles for images and avatars */
+.brand-logo{height:40px;width:auto;display:inline-block;border-radius:8px}
+.candidate-avatar-img{width:56px;height:56px;border-radius:10px;object-fit:cover;margin-right:12px;flex-shrink:0}
+.candidate-card{display:flex;align-items:center;gap:12px;padding:12px;border-radius:12px;border:1px solid rgba(0,0,0,0.04);background:linear-gradient(180deg,rgba(255,255,255,0.98),rgba(255,255,255,0.96));transition:transform .18s,box-shadow .18s}
+.candidate-card:hover{transform:translateY(-6px);box-shadow:0 18px 40px rgba(9,77,46,.08)}
+.candidate-card .candidate-details{display:block;text-align:left}
+
+@media (max-width:720px){
+  .candidate-avatar-img{width:44px;height:44px}
+}
