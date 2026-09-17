@@ -152,9 +152,8 @@ auth.onAuthStateChanged(async user => {
   // allow admin by email OR by `isAdmin` flag on the user document
   let isAdmin = false;
   try {
-    const userDoc = await db.collection('users').doc(user.uid).get();
-    const userData = userDoc.exists ? userDoc.data() : null;
-    isAdmin = (!!user.email && user.email.toLowerCase() === adminEmail.toLowerCase()) || (userData && userData.isAdmin === true);
+    // only allow the explicitly configured admin email to access the dashboard
+    isAdmin = !!user.email && user.email.toLowerCase() === adminEmail.toLowerCase();
   } catch (err) {
     console.error('Admin check failed', err);
     isAdmin = !!user.email && user.email.toLowerCase() === adminEmail.toLowerCase();

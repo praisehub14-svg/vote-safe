@@ -567,13 +567,23 @@ if (signUpBtn) {
 
 if (signOutBtn) {
   signOutBtn.addEventListener('click', async () => {
-    await auth.signOut();
+    try {
+      await auth.signOut();
+    } catch (err) {
+      console.error('Sign out failed', err);
+    }
+    window.location.href = 'index.html';
   });
 }
 
 if (logoutBtn) {
   logoutBtn.addEventListener('click', async () => {
-    await auth.signOut();
+    try {
+      await auth.signOut();
+    } catch (err) {
+      console.error('Sign out failed', err);
+    }
+    window.location.href = 'index.html';
   });
 }
 
@@ -625,10 +635,12 @@ if (saveProfile) {
 
     if (auth.currentUser) {
       await auth.currentUser.updateProfile({ displayName: value });
+      // reload to ensure latest profile data is available
+      if (auth.currentUser.reload) await auth.currentUser.reload();
     }
 
     showToast('Profile updated', 'Your new profile is saved.', 2200);
-    updateHeader(user);
+    updateHeader(auth.currentUser || user);
   });
 }
 
@@ -650,11 +662,11 @@ auth.onAuthStateChanged(async user => {
   let isAdmin = false;
   try {
     const userDoc = await db.collection('users').doc(user.uid).get();
-    const userData = userDoc.exists ? userDoc.data() : null;
-    isAdmin = (user.email && user.email.toLowerCase() === adminEmail.toLowerCase()) || (userData && userData.isAdmin === true);
+    // only allow the explicitly configured admin email to see admin UI
+    isAdmin = !!user.email && user.email.toLowerCase() === adminEmail.toLowerCase();
   } catch (err) {
     console.error('Admin check failed', err);
-    isAdmin = user.email && user.email.toLowerCase() === adminEmail.toLowerCase();
+    isAdmin = !!user.email && user.email.toLowerCase() === adminEmail.toLowerCase();
   }
 
   if (headerUser) headerUser.hidden = false;
