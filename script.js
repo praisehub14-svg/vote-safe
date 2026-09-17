@@ -638,6 +638,7 @@ auth.onAuthStateChanged(async user => {
   if (!user) {
     showAuthOverlay();
     if (headerUser) headerUser.hidden = true;
+    if (profileBtn) profileBtn.hidden = true;
     if (adminBtn) adminBtn.hidden = true;
     if (adminBtnMobile) adminBtnMobile.hidden = true;
     if (appMain) appMain.classList.add('locked');
@@ -646,12 +647,16 @@ auth.onAuthStateChanged(async user => {
 
   closeAuthOverlay();
   if (appMain) appMain.classList.remove('locked');
-  await updateHeader(user);
 
   const isAdmin = user.email && user.email.toLowerCase() === adminEmail.toLowerCase();
+
+  if (headerUser) headerUser.hidden = false;
+  if (profileBtn) profileBtn.hidden = false;
   if (adminBtn) adminBtn.hidden = !isAdmin;
   if (adminBtnMobile) adminBtnMobile.hidden = !isAdmin;
   if (signOutBtn) signOutBtn.hidden = false;
+
+  await updateHeader(user);
 
   if (auth.currentUser && !auth.currentUser.emailVerified) {
     // keep signed in users in the app without blocking access
