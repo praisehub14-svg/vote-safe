@@ -120,20 +120,34 @@
   <script src="https://www.gstatic.com/firebasejs/9.22.1/firebase-app-compat.js"></script>
   <script src="https://www.gstatic.com/firebasejs/9.22.1/firebase-auth-compat.js"></script>
   <script src="https://www.gstatic.com/firebasejs/9.22.1/firebase-firestore-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/9.22.1/firebase-functions-compat.js"></script>
 
   <!-- Login / Auth UI -->
   <div class="auth-overlay" id="authOverlay" hidden>
-    <div class="auth-card">
+      <div class="auth-card">
       <div class="auth-head"><h2>Welcome to Vote Safe</h2><p id="authNotice">Sign in or create an account to continue.</p></div>
-      <form id="authForm" class="auth-form">
-        <div class="field"><label for="displayNameInput">Full name</label><input id="displayNameInput" type="text" placeholder="Your name" /></div>
-        <div class="field"><label for="emailInput">Email</label><input id="emailInput" type="email" placeholder="you@school.edu" required/></div>
-        <div class="field"><label for="passwordInput">Password</label><input id="passwordInput" type="password" placeholder="••••••••" required/></div>
-        <div class="auth-actions">
-          <button id="signInBtn" type="button" class="button button-primary">Sign in</button>
-          <button id="signUpBtn" type="button" class="button button-outline">Create account</button>
-        </div>
-      </form>
+      <div class="auth-tabs">
+        <button id="showSignIn" class="button button-outline">Sign in</button>
+        <button id="showSignUp" class="button button-outline">Create account</button>
+      </div>
+      <div class="auth-forms">
+        <form id="signInForm" class="auth-form">
+          <div class="field"><label for="signInEmail">Email</label><input id="signInEmail" type="email" placeholder="you@school.edu" required/></div>
+          <div class="field"><label for="signInPassword">Password</label><input id="signInPassword" type="password" placeholder="••••••••" required/></div>
+          <div class="auth-actions">
+            <button id="signInBtn" type="button" class="button button-primary">Sign in</button>
+          </div>
+        </form>
+
+        <form id="signUpForm" class="auth-form" hidden>
+          <div class="field"><label for="signUpDisplayName">Full name</label><input id="signUpDisplayName" type="text" placeholder="Your name" /></div>
+          <div class="field"><label for="signUpEmail">Email</label><input id="signUpEmail" type="email" placeholder="you@school.edu" required/></div>
+          <div class="field"><label for="signUpPassword">Password</label><input id="signUpPassword" type="password" placeholder="••••••••" required/></div>
+          <div class="auth-actions">
+            <button id="signUpBtn" type="button" class="button button-outline">Create account</button>
+          </div>
+        </form>
+      </div>
       <div class="auth-foot"><button id="signOutBtn" class="text-link" hidden>Sign out</button></div>
     </div>
   </div>

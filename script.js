@@ -8,10 +8,18 @@ const selectedCandidateText = document.getElementById('selectedCandidate');
 const toast = document.getElementById('toast');
 const themeToggle = document.getElementById('themeToggle');
 const authOverlay = document.getElementById('authOverlay');
-const emailInput = document.getElementById('emailInput');
-const passwordInput = document.getElementById('passwordInput');
+// Sign-in form elements
+const signInEmail = document.getElementById('signInEmail');
+const signInPassword = document.getElementById('signInPassword');
 const signInBtn = document.getElementById('signInBtn');
+// Sign-up form elements
+const signUpDisplayName = document.getElementById('signUpDisplayName');
+const signUpEmail = document.getElementById('signUpEmail');
+const signUpPassword = document.getElementById('signUpPassword');
 const signUpBtn = document.getElementById('signUpBtn');
+// UI toggles
+const showSignIn = document.getElementById('showSignIn');
+const showSignUp = document.getElementById('showSignUp');
 const signOutBtn = document.getElementById('signOutBtn');
 const authNotice = document.getElementById('authNotice');
 const adminPanel = document.getElementById('adminPanel');
@@ -167,9 +175,18 @@ setInterval(() => {
 }, 1000);
 
 // Authentication flows
+showSignIn?.addEventListener('click', () => {
+  document.getElementById('signInForm').hidden = false;
+  document.getElementById('signUpForm').hidden = true;
+});
+showSignUp?.addEventListener('click', () => {
+  document.getElementById('signInForm').hidden = true;
+  document.getElementById('signUpForm').hidden = false;
+});
+
 signInBtn.addEventListener('click', async () => {
   try {
-    await auth.signInWithEmailAndPassword(emailInput.value, passwordInput.value);
+    await auth.signInWithEmailAndPassword(signInEmail.value, signInPassword.value);
   } catch (err) {
     authNotice.textContent = err.message;
   }
@@ -177,8 +194,8 @@ signInBtn.addEventListener('click', async () => {
 
 signUpBtn.addEventListener('click', async () => {
   try {
-    const displayNameVal = document.getElementById('displayNameInput')?.value || '';
-    const cred = await auth.createUserWithEmailAndPassword(emailInput.value, passwordInput.value);
+    const displayNameVal = signUpDisplayName?.value || '';
+    const cred = await auth.createUserWithEmailAndPassword(signUpEmail.value, signUpPassword.value);
     // create user profile doc with avatar
     const color = colorFromString(cred.user.uid || cred.user.email || '');
     const initials = initialsFromName(displayNameVal || cred.user.email || '');
@@ -260,7 +277,7 @@ auth.onAuthStateChanged(async (user) => {
     let profile;
     if (!doc.exists) {
       // create profile with generated avatar
-      const displayName = document.getElementById('displayNameInput')?.value || (user.displayName || '');
+      const displayName = document.getElementById('signUpDisplayName')?.value || (user.displayName || '');
       const color = colorFromString(user.uid || user.email || '');
       const initials = initialsFromName(displayName || user.email || '');
       const avatar = generateAvatarDataUrl(initials, color);
