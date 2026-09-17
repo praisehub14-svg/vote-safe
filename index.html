@@ -5,6 +5,8 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <meta name="description" content="Vote Safe - Secure online voting for Dr Ogbonnaya Onu Polytechnic, Aba, Abia State." />
   <title>Vote Safe | Secure Campus Voting</title>
+  <link rel="icon" type="image/svg+xml" href="assets/favicon.svg" />
+  <link rel="apple-touch-icon" href="assets/favicon.svg" />
   <link rel="preconnect" href="https://fonts.googleapis.com" />
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=Space+Grotesk:wght@500;600;700&display=swap" rel="stylesheet" />
@@ -38,13 +40,26 @@
 
       <div class="header-actions">
         <button class="icon-button" id="themeToggle" type="button" aria-label="Toggle dark mode" title="Toggle dark mode">◐</button>
-        <a class="button button-small button-outline" href="#vote">Start voting <span>→</span></a>
+        <a class="button button-small button-outline hide-mobile" href="#vote">Start voting <span>→</span></a>
         <div class="header-user" id="headerUser" hidden>
           <button id="profileBtn" class="profile-btn" title="Open profile">
             <img id="headerAvatar" src="" alt="avatar" />
           </button>
         </div>
-        <a id="adminBtn" class="button button-small button-primary" href="admin.html" hidden>Admin dashboard</a>
+        <a id="adminBtn" class="button button-small button-primary hide-mobile" href="admin.html" hidden>Admin dashboard</a>
+
+        <button class="mobile-menu-toggle" id="mobileMenuToggle" type="button" aria-label="Toggle navigation" aria-expanded="false">
+          <span></span><span></span><span></span>
+        </button>
+      </div>
+
+      <div class="mobile-nav-panel" id="mobileNavPanel" aria-hidden="true">
+        <a class="nav-link active" href="#home">Home</a>
+        <a class="nav-link" href="#how-it-works">How it works</a>
+        <a class="nav-link" href="#security">Security</a>
+        <a class="nav-link" href="#about">About</a>
+        <a class="button button-primary" href="#vote">Cast your vote</a>
+        <a id="adminBtnMobile" class="button button-primary" href="admin.html" hidden>Admin dashboard</a>
       </div>
     </header>
 
@@ -60,7 +75,7 @@
           </div>
           <div class="trust-row">
             <div class="avatar-stack" aria-hidden="true"><span>JD</span><span>AM</span><span>KW</span><span>+</span></div>
-            <div><strong>12,480+</strong><small>secure votes cast</small></div>
+            <div><strong class="count-up" data-target="12480" data-suffix="+">0</strong><small>secure votes cast</small></div>
             <span class="trust-divider"></span>
             <div class="verified-text"><span>✓</span> Built for trust</div>
           </div>
@@ -88,10 +103,10 @@
       </section>
 
       <section class="stats-strip section-container" aria-label="Vote Safe statistics">
-        <div><strong>256-bit</strong><span>Data encryption</span></div>
-        <div><strong>99.9%</strong><span>System uptime</span></div>
-        <div><strong>100%</strong><span>Anonymous ballots</span></div>
-        <div><strong>24/7</strong><span>Monitoring</span></div>
+        <div><strong class="count-up" data-target="256" data-suffix="-bit">0</strong><span>Data encryption</span></div>
+        <div><strong class="count-up" data-target="99.9" data-suffix="%">0</strong><span>System uptime</span></div>
+        <div><strong class="count-up" data-target="100" data-suffix="%">0</strong><span>Anonymous ballots</span></div>
+        <div><strong class="count-up" data-target="24" data-suffix="/7">0</strong><span>Monitoring</span></div>
       </section>
 
       <section class="section-container info-section" id="how-it-works">
@@ -231,6 +246,37 @@
       </div>
 
       <div class="auth-foot"><button id="signOutBtn" class="text-link" type="button" hidden>Sign out</button></div>
+    </div>
+  </div>
+
+  <div class="modal-backdrop" id="profileModal" aria-hidden="true" hidden>
+    <div class="modal profile-modal" role="dialog" aria-modal="true" aria-labelledby="profileTitle">
+      <button class="modal-close" id="closeProfile" type="button" aria-label="Close profile">×</button>
+      <div class="profile-header">
+        <div class="profile-avatar-wrap">
+          <img id="profileAvatar" src="" alt="profile avatar" />
+        </div>
+        <div>
+          <div class="eyebrow">Profile</div>
+          <h2 id="profileTitle">Your account</h2>
+        </div>
+      </div>
+
+      <div class="profile-meta">
+        <span class="profile-badge">Signed in as</span>
+        <p id="profileEmail">—</p>
+      </div>
+
+      <label class="profile-field">
+        <span>Display name</span>
+        <input id="profileDisplayName" type="text" placeholder="Your full name" />
+      </label>
+
+      <div class="profile-actions">
+        <button id="closeProfileFooter" class="button button-outline" type="button">Close</button>
+        <button id="saveProfile" class="button button-primary" type="button">Save profile</button>
+        <button id="logoutBtn" class="button button-danger" type="button">Logout</button>
+      </div>
     </div>
   </div>
 

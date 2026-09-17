@@ -29,9 +29,10 @@ const candidateParty = document.getElementById('candidateParty');
 const signOutAdminBtn = document.getElementById('signOutAdmin');
 
 function renderBreakdown(candidates, voteMap) {
+  const totalVotes = Object.values(voteMap).reduce((sum, value) => sum + value, 0);
   const rows = candidates.map(candidate => {
     const votes = voteMap[candidate.name] || 0;
-    const percent = candidates.length ? (votes / Math.max(1, Object.values(voteMap).reduce((sum, value) => sum + value, 0))) * 100 : 0;
+    const percent = totalVotes > 0 ? (votes / totalVotes) * 100 : 0;
     return `
       <div class="chart-row">
         <div class="chart-label-row">
@@ -43,10 +44,13 @@ function renderBreakdown(candidates, voteMap) {
     `;
   }).join('');
 
-  candidateBreakdownEl.innerHTML = rows || '<div class="empty-note">No candidates yet.</div>';
+  if (candidateBreakdownEl) {
+    candidateBreakdownEl.innerHTML = rows || '<div class="empty-note">No candidates yet.</div>';
+  }
 }
 
 function renderActivities(events) {
+  if (!liveActivityEl) return;
   liveActivityEl.innerHTML = events.length ? events.map(item => `
     <div class="activity-item">
       <span class="dot"></span>
@@ -59,6 +63,7 @@ function renderActivities(events) {
 }
 
 function renderCandidatesList(candidates, voteMap) {
+  if (!candidateListEl) return;
   candidateListEl.innerHTML = candidates.length ? candidates.map(candidate => `
     <div class="candidate-row">
       <div>
@@ -71,6 +76,7 @@ function renderCandidatesList(candidates, voteMap) {
 }
 
 function renderUsers(users) {
+  if (!userListEl) return;
   userListEl.innerHTML = users.length ? users.map(user => `
     <div class="user-row">
       <div class="avatar-mini">${(user.displayName || user.email || 'U').split(' ').map(part => part[0]).slice(0,2).join('').toUpperCase()}</div>
@@ -82,7 +88,7 @@ function renderUsers(users) {
   `).join('') : '<div class="empty-note">No users yet.</div>';
 }
 
-function populatesAdminDashboard(candidates, users, votes, events) {
+function populateAdminDashboard(candidates, users, votes, events) {
   const voteMap = {};
   votes.forEach(vote => {
     const candidateNameValue = vote.candidate || 'Unknown';
@@ -90,9 +96,9 @@ function populatesAdminDashboard(candidates, users, votes, events) {
   });
 
   const totalVotes = votes.length;
-  totalVotesEl.textContent = String(totalVotes);
-  totalUsersEl.textContent = String(users.length);
-  totalCandidatesEl.textContent = String(candidates.length);
+  if (totalVotesEl) totalVotesEl.textContent = String(totalVotes);
+  if (totalUsersEl) totalUsersEl.textContent = String(users.length);
+  if (totalCandidatesEl) totalCandidatesEl.textContent = String(candidates.length);
 
   const winner = candidates.reduce((bestCandidate, currentCandidate) => {
     const currentVotes = voteMap[currentCandidate.name] || 0;
@@ -103,7 +109,7 @@ function populatesAdminDashboard(candidates, users, votes, events) {
     return bestCandidate;
   }, null);
 
-  winnerNameEl.textContent = winner ? winner.name : '—';
+  if (winnerNameEl) winnerNameEl.textContent = winner ? winner.name : '—';
 
   renderBreakdown(candidates, voteMap);
   renderCandidatesList(candidates, voteMap);
@@ -111,27 +117,31 @@ function populatesAdminDashboard(candidates, users, votes, events) {
   renderActivities(events.slice(0, 8));
 }
 
-addCandidateForm.addEventListener('submit', async event => {
-  event.preventDefault();
-  const name = candidateName.value.trim();
-  const party = candidateParty.value.trim();
+if (addCandidateForm) {
+  addCandidateForm.addEventListener('submit', async event => {
+    event.preventDefault();
+    const name = candidateName.value.trim();
+    const party = candidateParty.value.trim();
 
-  if (!name || !party) return;
+    if (!name || !party) return;
 
-  await db.collection('candidates').add({
-    name,
-    party,
-    order: Date.now()
+    await db.collection('candidates').add({
+      name,
+      party,
+      order: Date.now()
+    });
+
+    candidateName.value = '';
+    candidateParty.value = '';
   });
+}
 
-  candidateName.value = '';
-  candidateParty.value = '';
-});
-
-signOutAdminBtn.addEventListener('click', async () => {
-  await auth.signOut();
-  window.location.href = 'index.html';
-});
+if (signOutAdminBtn) {
+  signOutAdminBtn.addEventListener('click', async () => {
+    await auth.signOut();
+    window.location.href = 'index.html';
+  });
+}
 
 auth.onAuthStateChanged(async user => {
   if (!user) {
@@ -139,7 +149,8 @@ auth.onAuthStateChanged(async user => {
     return;
   }
 
-  if (user.email !== adminEmail) {
+  const isAdmin = !!user.email && user.email.toLowerCase() === adminEmail.toLowerCase();
+  if (!isAdmin) {
     window.location.href = 'index.html';
     return;
   }
@@ -156,7 +167,7 @@ auth.onAuthStateChanged(async user => {
             title: event.type === 'vote_submitted' ? `${event.email || event.uid || 'A voter'} voted for ${event.candidate}` : `${event.type}`,
             meta: event.time && event.time.toDate ? new Date(event.time.toDate()).toLocaleString() : 'Recent event'
           }));
-          populatesAdminDashboard(candidates, users, votes, formattedEvents);
+          populateAdminDashboard(candidates, users, votes, formattedEvents);
         });
       });
     });

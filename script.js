@@ -21,16 +21,25 @@ const showSignIn = document.getElementById('showSignIn');
 const showSignUp = document.getElementById('showSignUp');
 const signOutBtn = document.getElementById('signOutBtn');
 const adminBtn = document.getElementById('adminBtn');
+const adminBtnMobile = document.getElementById('adminBtnMobile');
 const headerUser = document.getElementById('headerUser');
 const headerAvatar = document.getElementById('headerAvatar');
 const profileBtn = document.getElementById('profileBtn');
 const profileModal = document.getElementById('profileModal');
+const closeProfile = document.getElementById('closeProfile');
+const closeProfileFooter = document.getElementById('closeProfileFooter');
+const profileAvatar = document.getElementById('profileAvatar');
+const profileEmail = document.getElementById('profileEmail');
+const profileDisplayName = document.getElementById('profileDisplayName');
+const profileTitle = document.getElementById('profileTitle');
 const saveProfile = document.getElementById('saveProfile');
+const logoutBtn = document.getElementById('logoutBtn');
 const appLoader = document.getElementById('appLoader');
 const appMain = document.getElementById('appMain');
+const mobileMenuToggle = document.getElementById('mobileMenuToggle');
+const mobileNavPanel = document.getElementById('mobileNavPanel');
 
 let selectedCandidate = '';
-let candidateList = [];
 const adminEmail = 'praise234@gmail.com';
 
 const firebaseConfig = {
@@ -49,14 +58,14 @@ const auth = firebase.auth();
 const db = firebase.firestore();
 const functions = firebase.functions();
 
+function escapeHtml(value) {
+  return String(value || '').replace(/[&<>"']/g, char => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#039;' }[char]));
+}
+
 function setLoadingScreen(isVisible) {
   if (!appLoader) return;
   appLoader.hidden = !isVisible;
-  if (isVisible) {
-    document.body.classList.add('is-loading');
-  } else {
-    document.body.classList.remove('is-loading');
-  }
+  document.body.classList.toggle('is-loading', isVisible);
 }
 
 function showAuthOverlay() {
@@ -72,6 +81,7 @@ function closeAuthOverlay() {
 }
 
 function showToast(title, small, ms = 3000) {
+  if (!toast) return;
   const strong = toast.querySelector('strong');
   const detail = toast.querySelector('small');
   if (strong) strong.textContent = title;
@@ -97,8 +107,56 @@ function setButtonLoading(btn, loading, text) {
   }
 }
 
+function generateProAvatarDataUrl(name, email, colorHint) {
+  const safeName = (name && name.trim()) || (email && email.trim()) || 'VoteSafe';
+  const hash = [...safeName].reduce((total, char) => total + char.charCodeAt(0), 0);
+  const hueA = Math.abs(hash) % 360;
+  const hueB = (hueA + 44) % 360;
+  const hueC = (hueA + 120) % 360;
+  const base = `hsl(${hueA} 72% 52%)`;
+  const accent = `hsl(${hueB} 64% 58%)`;
+  const shadow = `hsl(${hueC} 54% 42%)`;
+  const initials = safeName.split(/\s+/).filter(Boolean).slice(0, 2).map(part => part[0].toUpperCase()).join('') || 'VS';
+  const svg = `
+    <svg xmlns='http://www.w3.org/2000/svg' width='240' height='240' viewBox='0 0 240 240'>
+      <defs>
+        <linearGradient id='bgGradient' x1='0' x2='1' y1='0' y2='1'>
+          <stop offset='0%' stop-color='${base}' />
+          <stop offset='52%' stop-color='${accent}' />
+          <stop offset='100%' stop-color='${shadow}' />
+        </linearGradient>
+      </defs>
+      <rect width='240' height='240' rx='52' fill='url(#bgGradient)' />
+      <circle cx='170' cy='60' r='52' fill='rgba(255,255,255,0.16)' />
+      <circle cx='70' cy='165' r='60' fill='rgba(8,30,20,0.12)' />
+      <path d='M70 70c18-30 82-30 100 0v78c-11 28-88 28-100 0V70Z' fill='rgba(255,255,255,0.18)' />
+      <circle cx='121' cy='92' r='28' fill='rgba(255,255,255,0.88)' />
+      <path d='M83 158c10-22 30-33 41-33s31 11 41 33v18H83v-18Z' fill='rgba(255,255,255,0.82)' />
+      <text x='120' y='206' text-anchor='middle' fill='white' font-size='28' font-family='Inter, Arial, sans-serif' font-weight='800'>${initials}</text>
+    </svg>
+  `;
+
+  return `data:image/svg+xml;charset=utf-8,${encodeURIComponent(svg)}`;
+}
+
+function getInitials(name = '') {
+  if (!name) return 'VS';
+  const parts = name.trim().split(/\s+/).filter(Boolean);
+  const initials = parts.slice(0, 2).map(part => part[0]).join('').toUpperCase();
+  return initials || 'VS';
+}
+
+function colorFromString(value) {
+  let hash = 0;
+  for (let i = 0; i < value.length; i += 1) {
+    hash = value.charCodeAt(i) + ((hash << 5) - hash);
+  }
+  const hue = Math.abs(hash % 360);
+  return `hsl(${hue} 72% 52%)`;
+}
+
 function renderCandidates(candidates) {
-  candidateList = candidates;
+  if (!candidateGrid) return;
   candidateGrid.innerHTML = '';
 
   if (!candidates.length) {
@@ -112,28 +170,29 @@ function renderCandidates(candidates) {
     button.className = 'candidate-card';
     button.dataset.candidate = candidate.name;
     button.dataset.id = candidate.id || candidate.name;
+
+    const candidateAvatar = generateProAvatarDataUrl(candidate.name, candidate.party || 'Candidate', candidate.color || '#159b63');
     button.innerHTML = `
-      <div class="candidate-avatar">${(candidate.name || 'VS').split(' ').map(part => part[0]).slice(0,2).join('').toUpperCase()}</div>
+      <img class="candidate-avatar" src="${candidateAvatar}" alt="${escapeHtml(candidate.name)}" />
       <span class="candidate-details">
-        <strong>${candidate.name}</strong>
-        <small>${candidate.party || 'Independent candidate'}</small>
+        <strong>${escapeHtml(candidate.name)}</strong>
+        <small>${escapeHtml(candidate.party || 'Independent candidate')}</small>
       </span>
       <span class="candidate-meta">${candidate.votes || 0} votes</span>
       <span class="candidate-radio"></span>
     `;
 
     button.addEventListener('click', () => {
-      const activeCards = document.querySelectorAll('.candidate-card');
-      activeCards.forEach(item => item.classList.remove('selected'));
+      document.querySelectorAll('.candidate-card').forEach(item => item.classList.remove('selected'));
       button.classList.add('selected');
       selectedCandidate = candidate.name;
-      reviewButton.disabled = false;
+      if (reviewButton) reviewButton.disabled = false;
     });
 
     if (index === 0 && !selectedCandidate) {
       button.classList.add('selected');
       selectedCandidate = candidate.name;
-      reviewButton.disabled = false;
+      if (reviewButton) reviewButton.disabled = false;
     }
 
     candidateGrid.appendChild(button);
@@ -141,6 +200,8 @@ function renderCandidates(candidates) {
 }
 
 async function ensureSeedCandidates() {
+  if (!auth.currentUser) return;
+
   const snapshot = await db.collection('candidates').orderBy('order').get();
   if (!snapshot.empty) {
     const list = snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
@@ -160,6 +221,8 @@ async function ensureSeedCandidates() {
 }
 
 async function loadCandidateStats() {
+  if (!auth.currentUser) return;
+
   const votesSnapshot = await db.collection('votes').get();
   const voteCounts = {};
   votesSnapshot.forEach(doc => {
@@ -179,7 +242,7 @@ async function loadCandidateStats() {
 }
 
 function openModal() {
-  if (!selectedCandidate) return;
+  if (!selectedCandidate || !reviewModal) return;
   selectedCandidateText.textContent = selectedCandidate;
   reviewModal.classList.add('open');
   reviewModal.setAttribute('aria-hidden', 'false');
@@ -187,21 +250,26 @@ function openModal() {
 }
 
 function hideModal() {
+  if (!reviewModal) return;
   reviewModal.classList.remove('open');
   reviewModal.setAttribute('aria-hidden', 'true');
   document.body.style.overflow = '';
 }
 
-reviewButton.addEventListener('click', () => {
-  if (selectedCandidate) openModal();
-});
-closeModal.addEventListener('click', hideModal);
-editVote.addEventListener('click', hideModal);
-reviewModal.addEventListener('click', event => {
-  if (event.target === reviewModal) hideModal();
-});
+if (reviewButton) {
+  reviewButton.addEventListener('click', () => {
+    if (selectedCandidate) openModal();
+  });
+}
+if (closeModal) closeModal.addEventListener('click', hideModal);
+if (editVote) editVote.addEventListener('click', hideModal);
+if (reviewModal) {
+  reviewModal.addEventListener('click', event => {
+    if (event.target === reviewModal) hideModal();
+  });
+}
 document.addEventListener('keydown', event => {
-  if (event.key === 'Escape' && reviewModal.classList.contains('open')) hideModal();
+  if (event.key === 'Escape' && reviewModal && reviewModal.classList.contains('open')) hideModal();
 });
 
 async function submitVoteToFirestore() {
@@ -217,7 +285,8 @@ async function submitVoteToFirestore() {
     await submitVoteData({ candidate: selectedCandidate });
     hideModal();
     showToast('Vote submitted securely', 'Your ballot has been recorded.', 3500);
-    document.querySelector('.ballot-panel').classList.add('submitted');
+    const ballotPanel = document.querySelector('.ballot-panel');
+    if (ballotPanel) ballotPanel.classList.add('submitted');
     await loadCandidateStats();
   } catch (err) {
     const message = err && err.message ? err.message : 'Vote could not be submitted';
@@ -226,35 +295,41 @@ async function submitVoteToFirestore() {
   }
 }
 
-submitVote.addEventListener('click', async () => {
-  submitVote.disabled = true;
-  submitVote.innerHTML = 'Encrypting… <span>⟳</span>';
-  try {
-    await submitVoteToFirestore();
-  } catch (err) {
-    console.error('submitVote error', err);
-  } finally {
-    submitVote.disabled = false;
-    submitVote.innerHTML = 'Encrypt & submit <span>→</span>';
-  }
-});
+if (submitVote) {
+  submitVote.addEventListener('click', async () => {
+    submitVote.disabled = true;
+    submitVote.innerHTML = 'Encrypting… <span>⟳</span>';
+    try {
+      await submitVoteToFirestore();
+    } catch (error) {
+      console.error('submitVote error', error);
+    } finally {
+      submitVote.disabled = false;
+      submitVote.innerHTML = 'Encrypt & submit <span>→</span>';
+    }
+  });
+}
 
-themeToggle.addEventListener('click', () => {
-  document.body.classList.toggle('dark');
-  themeToggle.textContent = document.body.classList.contains('dark') ? '☀' : '◐';
-  themeToggle.setAttribute('aria-label', document.body.classList.contains('dark') ? 'Switch to light mode' : 'Toggle dark mode');
-});
+if (themeToggle) {
+  themeToggle.addEventListener('click', () => {
+    document.body.classList.toggle('dark');
+    themeToggle.textContent = document.body.classList.contains('dark') ? '☀' : '◐';
+    themeToggle.setAttribute('aria-label', document.body.classList.contains('dark') ? 'Switch to light mode' : 'Toggle dark mode');
+  });
+}
 
 const sections = document.querySelectorAll('main section[id]');
 const navLinks = document.querySelectorAll('.nav-link');
-const observer = new IntersectionObserver((entries) => {
-  entries.forEach(entry => {
-    if (entry.isIntersecting) {
-      navLinks.forEach(link => link.classList.toggle('active', link.getAttribute('href') === `#${entry.target.id}`));
-    }
-  });
-}, { rootMargin: '-35% 0px -55% 0px' });
-sections.forEach(section => observer.observe(section));
+if ('IntersectionObserver' in window && sections.length && navLinks.length) {
+  const observer = new IntersectionObserver((entries) => {
+    entries.forEach(entry => {
+      if (entry.isIntersecting) {
+        navLinks.forEach(link => link.classList.toggle('active', link.getAttribute('href') === `#${entry.target.id}`));
+      }
+    });
+  }, { rootMargin: '-35% 0px -55% 0px' });
+  sections.forEach(section => observer.observe(section));
+}
 
 let secondsLeft = 2 * 60 * 60 + 14 * 60 + 36;
 setInterval(() => {
@@ -267,19 +342,25 @@ setInterval(() => {
   if (countdown) countdown.textContent = `Closes in ${hours}:${minutes}:${seconds}`;
 }, 1000);
 
-showSignIn.addEventListener('click', () => {
-  const card = document.querySelector('.auth-card');
-  card.classList.remove('show-signup');
-  showSignIn.classList.add('active');
-  showSignUp.classList.remove('active');
-});
+if (showSignIn) {
+  showSignIn.addEventListener('click', () => {
+    const card = document.querySelector('.auth-card');
+    if (!card) return;
+    card.classList.remove('show-signup');
+    showSignIn.classList.add('active');
+    if (showSignUp) showSignUp.classList.remove('active');
+  });
+}
 
-showSignUp.addEventListener('click', () => {
-  const card = document.querySelector('.auth-card');
-  card.classList.add('show-signup');
-  showSignUp.classList.add('active');
-  showSignIn.classList.remove('active');
-});
+if (showSignUp) {
+  showSignUp.addEventListener('click', () => {
+    const card = document.querySelector('.auth-card');
+    if (!card) return;
+    card.classList.add('show-signup');
+    showSignUp.classList.add('active');
+    if (showSignIn) showSignIn.classList.remove('active');
+  });
+}
 
 document.querySelectorAll('.password-toggle').forEach(button => {
   button.addEventListener('click', () => {
@@ -291,48 +372,37 @@ document.querySelectorAll('.password-toggle').forEach(button => {
   });
 });
 
-function getInitials(name) {
-  if (!name) return 'VS';
-  const parts = name.trim().split(/\s+/);
-  const initials = parts.slice(0, 2).map(part => part[0]).join('').toUpperCase();
-  return initials || 'VS';
-}
-
-function colorFromString(value) {
-  let hash = 0;
-  for (let i = 0; i < value.length; i += 1) {
-    hash = value.charCodeAt(i) + ((hash << 5) - hash);
-  }
-  const hue = Math.abs(hash % 360);
-  return `hsl(${hue} 72% 52%)`;
-}
-
-function generateAvatarDataUrl(initials, bg) {
-  const svg = `<svg xmlns='http://www.w3.org/2000/svg' width='128' height='128'><rect width='100%' height='100%' fill='${bg}' rx='20'/><text x='50%' y='55%' font-size='52' text-anchor='middle' fill='white' font-family='Inter,Arial,sans-serif' font-weight='700'>${initials}</text></svg>`;
-  return `data:image/svg+xml;utf8,${encodeURIComponent(svg)}`;
+function createUserProfile(user) {
+  const displayName = user.displayName || user.email || 'New voter';
+  const color = colorFromString(user.uid || user.email || displayName);
+  return {
+    email: user.email,
+    displayName,
+    avatarColor: color,
+    avatar: generateProAvatarDataUrl(displayName, user.email, color),
+    createdAt: firebase.firestore.FieldValue.serverTimestamp()
+  };
 }
 
 async function ensureUserProfile(user) {
   const ref = db.collection('users').doc(user.uid);
   const doc = await ref.get();
+
   if (!doc.exists) {
-    const profile = {
-      email: user.email,
-      displayName: user.displayName || '',
-      avatarColor: colorFromString(user.uid || user.email || 'user'),
-      createdAt: firebase.firestore.FieldValue.serverTimestamp()
-    };
-    profile.avatar = generateAvatarDataUrl(getInitials(profile.displayName || user.email), profile.avatarColor);
+    const profile = createUserProfile(user);
     await ref.set(profile);
     return profile;
   }
 
   const data = doc.data();
   if (!data.avatar) {
-    const color = data.avatarColor || colorFromString(user.uid || user.email || 'user');
-    const avatar = generateAvatarDataUrl(getInitials(data.displayName || user.email), color);
-    await ref.update({ avatarColor: color, avatar });
-    return { ...data, avatar, avatarColor: color };
+    const profile = {
+      ...data,
+      avatar: generateProAvatarDataUrl(data.displayName || user.email || 'VoteSafe', user.email, data.avatarColor || colorFromString(user.uid || user.email || 'user')),
+      avatarColor: data.avatarColor || colorFromString(user.uid || user.email || 'user')
+    };
+    await ref.update(profile);
+    return profile;
   }
 
   return data;
@@ -341,97 +411,268 @@ async function ensureUserProfile(user) {
 async function updateHeader(user) {
   const profile = await ensureUserProfile(user);
   if (!profile) return;
-  headerUser.hidden = false;
-  headerAvatar.src = profile.avatar || generateAvatarDataUrl(getInitials(profile.displayName || user.email), profile.avatarColor || '#159b63');
-  headerAvatar.hidden = false;
+
+  const avatar = profile.avatar || generateProAvatarDataUrl(profile.displayName || user.email || 'VoteSafe', user.email, profile.avatarColor || '#0d774b');
+  if (headerUser) headerUser.hidden = false;
+  if (headerAvatar) {
+    headerAvatar.src = avatar;
+    headerAvatar.hidden = false;
+  }
+
+  if (profileAvatar) {
+    profileAvatar.src = avatar;
+  }
+
+  if (profileEmail) {
+    profileEmail.textContent = user.email || '—';
+  }
+
+  if (profileTitle) {
+    profileTitle.textContent = profile.displayName || 'Your account';
+  }
+
+  if (profileDisplayName) {
+    profileDisplayName.value = profile.displayName || '';
+  }
 }
 
-signInBtn.addEventListener('click', async () => {
-  setButtonLoading(signInBtn, true, 'Signing in…');
-  try {
-    await auth.signInWithEmailAndPassword(signInEmail.value.trim(), signInPassword.value);
-    authNotice.textContent = 'Signed in successfully';
-    showToast('Signed in', 'Welcome back.', 2000);
-    closeAuthOverlay();
-  } catch (error) {
-    authNotice.textContent = error.message;
-    showToast('Sign in failed', error.message, 4000);
-  } finally {
-    setButtonLoading(signInBtn, false);
-  }
-});
+function toggleMobileMenu(forceState) {
+  const next = typeof forceState === 'boolean' ? forceState : !mobileNavPanel.classList.contains('open');
+  if (!mobileNavPanel || !mobileMenuToggle) return;
+  mobileNavPanel.classList.toggle('open', next);
+  mobileNavPanel.setAttribute('aria-hidden', String(!next));
+  mobileMenuToggle.classList.toggle('is-open', next);
+  mobileMenuToggle.setAttribute('aria-expanded', String(next));
+}
 
-signUpBtn.addEventListener('click', async () => {
-  setButtonLoading(signUpBtn, true, 'Creating account…');
-  try {
-    const displayName = signUpDisplayName.value.trim();
-    const email = signUpEmail.value.trim();
-    const password = signUpPassword.value;
-    const confirm = signUpConfirmPassword.value;
+if (mobileMenuToggle) {
+  mobileMenuToggle.addEventListener('click', () => toggleMobileMenu());
+  document.querySelectorAll('.mobile-nav-panel .nav-link').forEach(link => {
+    link.addEventListener('click', () => toggleMobileMenu(false));
+  });
+}
 
-    if (password !== confirm) {
-      throw new Error('Passwords do not match.');
+function startCountAnimation() {
+  const counters = document.querySelectorAll('.count-up');
+  counters.forEach(element => {
+    const target = Number(element.dataset.target || 0);
+    const suffix = element.dataset.suffix || '';
+    const decimalPlaces = Number.isInteger(target) ? 0 : 1;
+    let current = 0;
+
+    const observer = new IntersectionObserver(entries => {
+      entries.forEach(entry => {
+        if (!entry.isIntersecting) return;
+        const totalSteps = 48;
+        let step = 0;
+        const tick = () => {
+          step += 1;
+          const progress = step / totalSteps;
+          current = target * progress;
+          if (decimalPlaces === 0) {
+            element.textContent = `${Math.round(current)}${suffix}`;
+          } else {
+            element.textContent = `${(current).toFixed(1)}${suffix}`;
+          }
+          if (step < totalSteps) {
+            requestAnimationFrame(tick);
+          } else {
+            element.textContent = `${target}${suffix}`;
+          }
+        };
+        requestAnimationFrame(tick);
+        observer.disconnect();
+      });
+    }, { threshold: 0.45 });
+
+    observer.observe(element);
+  });
+}
+
+function initRevealAnimations() {
+  const elements = document.querySelectorAll('.feature-card, .security-item, .ballot-panel, .glass-card, .section-heading, .cta-section, .stats-strip > div');
+  elements.forEach((element, index) => {
+    element.classList.add('reveal');
+    element.style.transitionDelay = `${index * 70}ms`;
+  });
+
+  const revealObserver = new IntersectionObserver(entries => {
+    entries.forEach(entry => {
+      if (entry.isIntersecting) {
+        entry.target.classList.add('is-visible');
+        revealObserver.unobserve(entry.target);
+      }
+    });
+  }, { threshold: 0.18 });
+
+  elements.forEach(element => revealObserver.observe(element));
+}
+
+if (signInBtn) {
+  signInBtn.addEventListener('click', async () => {
+    setButtonLoading(signInBtn, true, 'Signing in…');
+    try {
+      await auth.signInWithEmailAndPassword(signInEmail.value.trim(), signInPassword.value);
+      authNotice.textContent = 'Signed in successfully';
+      showToast('Signed in', 'Welcome back.', 2000);
+      closeAuthOverlay();
+    } catch (error) {
+      authNotice.textContent = error.message;
+      showToast('Sign in failed', error.message, 4000);
+    } finally {
+      setButtonLoading(signInBtn, false);
+    }
+  });
+}
+
+if (signUpBtn) {
+  signUpBtn.addEventListener('click', async () => {
+    setButtonLoading(signUpBtn, true, 'Creating account…');
+    try {
+      const displayName = signUpDisplayName.value.trim();
+      const email = signUpEmail.value.trim();
+      const password = signUpPassword.value;
+      const confirm = signUpConfirmPassword.value;
+
+      if (password !== confirm) {
+        throw new Error('Passwords do not match.');
+      }
+
+      const cred = await auth.createUserWithEmailAndPassword(email, password);
+      const profileColor = colorFromString(cred.user.uid || email);
+      const avatar = generateProAvatarDataUrl(displayName || email, email, profileColor);
+
+      await db.collection('users').doc(cred.user.uid).set({
+        email,
+        displayName,
+        avatarColor: profileColor,
+        avatar,
+        createdAt: firebase.firestore.FieldValue.serverTimestamp()
+      }, { merge: true });
+
+      if (auth.currentUser) {
+        await auth.currentUser.updateProfile({ displayName });
+      }
+
+      authNotice.textContent = 'Account created successfully';
+      showToast('Account created', 'Welcome — signing in.', 3000);
+    } catch (error) {
+      authNotice.textContent = error.message;
+      showToast('Account creation failed', error.message, 4000);
+    } finally {
+      setButtonLoading(signUpBtn, false);
+    }
+  });
+}
+
+if (signOutBtn) {
+  signOutBtn.addEventListener('click', async () => {
+    await auth.signOut();
+  });
+}
+
+if (logoutBtn) {
+  logoutBtn.addEventListener('click', async () => {
+    await auth.signOut();
+  });
+}
+
+if (profileBtn) {
+  profileBtn.addEventListener('click', () => {
+    if (!profileModal) return;
+    profileModal.hidden = false;
+    profileModal.setAttribute('aria-hidden', 'false');
+    document.body.style.overflow = 'hidden';
+  });
+}
+
+if (closeProfile) {
+  closeProfile.addEventListener('click', () => {
+    if (!profileModal) return;
+    profileModal.hidden = true;
+    profileModal.setAttribute('aria-hidden', 'true');
+    document.body.style.overflow = '';
+  });
+}
+
+if (closeProfileFooter) {
+  closeProfileFooter.addEventListener('click', () => {
+    if (!profileModal) return;
+    profileModal.hidden = true;
+    profileModal.setAttribute('aria-hidden', 'true');
+    document.body.style.overflow = '';
+  });
+}
+
+if (saveProfile) {
+  saveProfile.addEventListener('click', async () => {
+    const user = auth.currentUser;
+    if (!user || !profileDisplayName) return;
+
+    const value = profileDisplayName.value.trim();
+    if (!value) {
+      showToast('Profile error', 'Please add a display name.', 2500);
+      return;
     }
 
-    const cred = await auth.createUserWithEmailAndPassword(email, password);
-    const profileColor = colorFromString(cred.user.uid || email);
-    const avatar = generateAvatarDataUrl(getInitials(displayName || email), profileColor);
+    const profileRef = db.collection('users').doc(user.uid);
+    const avatar = generateProAvatarDataUrl(value, user.email || value, colorFromString(user.uid || user.email || value));
 
-    await db.collection('users').doc(cred.user.uid).set({
-      email,
-      displayName,
-      avatarColor: profileColor,
+    await profileRef.set({
+      displayName: value,
       avatar,
-      createdAt: firebase.firestore.FieldValue.serverTimestamp()
+      avatarColor: colorFromString(user.uid || user.email || value),
+      email: user.email
     }, { merge: true });
 
     if (auth.currentUser) {
-      await auth.currentUser.updateProfile({ displayName });
+      await auth.currentUser.updateProfile({ displayName: value });
     }
 
-    authNotice.textContent = 'Account created successfully';
-    showToast('Account created', 'Welcome — signing in.', 3000);
-  } catch (error) {
-    authNotice.textContent = error.message;
-    showToast('Account creation failed', error.message, 4000);
-  } finally {
-    setButtonLoading(signUpBtn, false);
-  }
-});
-
-signOutBtn.addEventListener('click', async () => {
-  await auth.signOut();
-});
+    showToast('Profile updated', 'Your new profile is saved.', 2200);
+    updateHeader(user);
+  });
+}
 
 auth.onAuthStateChanged(async user => {
   if (!user) {
     showAuthOverlay();
-    headerUser.hidden = true;
-    adminBtn.hidden = true;
-    appMain.classList.add('locked');
+    if (headerUser) headerUser.hidden = true;
+    if (adminBtn) adminBtn.hidden = true;
+    if (adminBtnMobile) adminBtnMobile.hidden = true;
+    if (appMain) appMain.classList.add('locked');
     return;
   }
 
   closeAuthOverlay();
-  appMain.classList.remove('locked');
+  if (appMain) appMain.classList.remove('locked');
   await updateHeader(user);
 
-  if (user.email === adminEmail) {
-    adminBtn.hidden = false;
-  } else {
-    adminBtn.hidden = true;
+  const isAdmin = user.email && user.email.toLowerCase() === adminEmail.toLowerCase();
+  if (adminBtn) adminBtn.hidden = !isAdmin;
+  if (adminBtnMobile) adminBtnMobile.hidden = !isAdmin;
+  if (signOutBtn) signOutBtn.hidden = false;
+
+  if (auth.currentUser && !auth.currentUser.emailVerified) {
+    // keep signed in users in the app without blocking access
   }
 
-  signOutBtn.hidden = false;
+  if (auth.currentUser && !isAdmin) {
+    // regular user flow remains open; admin route is guarded in admin.js
+  }
 });
 
-setLoadingScreen(true);
-window.addEventListener('load', () => {
-  ensureSeedCandidates()
-    .then(() => loadCandidateStats())
-    .catch(error => console.error('Candidate load failed', error));
+if (appLoader) {
+  setLoadingScreen(true);
+  window.addEventListener('load', () => {
+    Promise.allSettled([
+      ensureSeedCandidates(),
+      auth.currentUser ? loadCandidateStats() : Promise.resolve()
+    ]).catch(error => console.error('Candidate load failed', error));
 
-  setTimeout(() => {
-    setLoadingScreen(false);
-  }, 1200);
-});
+    setTimeout(() => setLoadingScreen(false), 1100);
+  });
+}
+
+startCountAnimation();
+initRevealAnimations();

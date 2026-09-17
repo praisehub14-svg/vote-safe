@@ -1,0 +1,32 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 128 128" role="img" aria-label="Vote Safe favicon">
+  <defs>
+    <linearGradient id="bg" x1="0" x2="1" y1="0" y2="1">
+      <stop offset="0%" stop-color="#1ecf7b"/>
+      <stop offset="100%" stop-color="#0b6d45"/>
+    </linearGradient>
+    <style>
+      .pulse { animation: pulse 1.8s ease-in-out infinite; transform-origin: center; }
+      .spin { animation: spin 3.2s linear infinite; transform-origin: center; }
+      @keyframes pulse {
+        0%, 100% { transform: scale(1); opacity: 1; }
+        50% { transform: scale(1.08); opacity: 0.9; }
+      }
+      @keyframes spin {
+        0% { transform: rotate(0deg); }
+        100% { transform: rotate(360deg); }
+      }
+    </style>
+  </defs>
+  <rect width="128" height="128" rx="30" fill="url(#bg)"/>
+  <g class="pulse">
+    <rect x="32" y="26" width="64" height="58" rx="14" fill="rgba(255,255,255,0.2)"/>
+    <rect x="40" y="34" width="48" height="10" rx="5" fill="rgba(255,255,255,0.7)"/>
+    <rect x="40" y="52" width="36" height="8" rx="4" fill="rgba(255,255,255,0.65)"/>
+    <rect x="40" y="66" width="28" height="8" rx="4" fill="rgba(255,255,255,0.65)"/>
+    <path d="M90 96 L64 72 L51 85 L44 77 L32 89 L90 96 Z" fill="rgba(255,255,255,0.9)"/>
+  </g>
+  <g class="spin" opacity="0.55">
+    <circle cx="100" cy="32" r="14" fill="none" stroke="rgba(255,255,255,0.7)" stroke-width="4"/>
+  </g>
+  <circle cx="100" cy="32" r="6" fill="#ffffff"/>
+</svg>
