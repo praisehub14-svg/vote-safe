@@ -1,20 +1,13 @@
-<svg xmlns="http://www.w3.org/2000/svg" width="200" height="52" viewBox="0 0 200 52" role="img" aria-label="Vote Safe logo">
+<svg xmlns="http://www.w3.org/2000/svg" width="64" height="64" viewBox="0 0 64 64" role="img" aria-label="Vote Safe icon">
   <defs>
     <linearGradient id="vsGlow" x1="0" x2="1" y1="0" y2="1">
-      <stop offset="0%" stop-color="#33d57d"/>
-      <stop offset="58%" stop-color="#12a86c"/>
-      <stop offset="100%" stop-color="#0c6248"/>
-    </linearGradient>
-    <linearGradient id="vsGlass" x1="0" x2="1" y1="0" y2="0">
-      <stop offset="0%" stop-color="rgba(255,255,255,0.26)"/>
-      <stop offset="100%" stop-color="rgba(255,255,255,0.06)"/>
+      <stop offset="0%" stop-color="#37d983"/>
+      <stop offset="60%" stop-color="#11a86d"/>
+      <stop offset="100%" stop-color="#0a5f45"/>
     </linearGradient>
   </defs>
-  <rect x="0" y="4" width="44" height="44" rx="12" fill="url(#vsGlow)"/>
-  <path d="M11 33V14l9 11 9-11v19h-5V20l-4 5-4-5v13h-5z" fill="#ffffff"/>
-  <path d="M13 10c5-6 15-6 20 0" fill="none" stroke="rgba(255,255,255,0.82)" stroke-width="2.8" stroke-linecap="round"/>
-  <path d="M31 12c2 3 2 8 0 11-2 3-6 5-11 5h-2" fill="none" stroke="rgba(255,255,255,0.7)" stroke-width="2.2" stroke-linecap="round"/>
-  <g transform="translate(58 0)" fill="#0b1f1a" font-family="Inter, Arial, sans-serif" font-weight="800" font-size="24" letter-spacing="-0.08em">
-    <text x="0" y="31">Vote<tspan fill="#0b8f5d">Safe</tspan></text>
-  </g>
+  <rect x="4" y="4" width="56" height="56" rx="18" fill="url(#vsGlow)"/>
+  <path d="M17 41V21.5L31 35l14-13.5V41h-7V27.6l-7 6.9-7-6.9V41h-7z" fill="#ffffff"/>
+  <path d="M19.5 15.5c7.2-8.6 19.6-8.7 27 0" fill="none" stroke="rgba(255,255,255,0.8)" stroke-width="3" stroke-linecap="round"/>
+  <circle cx="46" cy="19" r="4.5" fill="rgba(255,255,255,0.24)"/>
 </svg>
