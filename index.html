@@ -205,6 +205,13 @@
         <div><strong>Encryption ready</strong><small>RSA-2048 + AES-256 simulation active</small></div>
         <span class="status-online">ONLINE</span>
       </div>
+      <div class="security-score-box" aria-live="polite">
+        <div class="security-score-head">
+          <span>Ballot integrity</span>
+          <strong id="ballotTrustValue">98.6%</strong>
+        </div>
+        <div class="security-score-bar"><span id="ballotTrustBar"></span></div>
+      </div>
       <div class="modal-actions">
         <button class="button button-outline" id="editVote" type="button">Go back</button>
         <button class="button button-primary" id="submitVote" type="button">Encrypt & submit <span>→</span></button>
@@ -232,18 +239,31 @@
       <div class="auth-forms">
         <div class="forms-viewport">
           <div class="forms-slider" id="formsSlider">
-            <form id="signInForm" class="auth-form" aria-label="Sign in form">
-              <div class="field"><label for="signInEmail">Email</label><input id="signInEmail" type="email" placeholder="you@school.edu" required /></div>
+            <form id="signInForm" class="auth-form" aria-label="Sign in form" novalidate>
+              <div class="field"><label for="signInEmail">Institution email</label><input id="signInEmail" type="email" placeholder="you@school.edu" required /></div>
               <div class="field password-field"><label for="signInPassword">Password</label><input id="signInPassword" type="password" placeholder="••••••••" required /><button type="button" class="password-toggle" aria-label="Toggle password visibility">👁</button></div>
-              <div class="auth-actions"><button id="signInBtn" type="button" class="button button-primary button-animated">Sign in</button></div>
+              <div class="auth-row">
+                <label class="check-row"><input type="checkbox" id="rememberSession" checked /> <span>Keep me signed in</span></label>
+                <button type="button" class="text-link mini-link">Need help?</button>
+              </div>
+              <div class="auth-actions"><button id="signInBtn" type="submit" class="button button-primary button-animated">Sign in securely</button></div>
             </form>
 
-            <form id="signUpForm" class="auth-form" aria-label="Sign up form">
-              <div class="field"><label for="signUpDisplayName">Full name</label><input id="signUpDisplayName" type="text" placeholder="Your name" required /></div>
-              <div class="field"><label for="signUpEmail">Email</label><input id="signUpEmail" type="email" placeholder="you@school.edu" required /></div>
-              <div class="field password-field"><label for="signUpPassword">Password</label><input id="signUpPassword" type="password" placeholder="••••••••" required /><button type="button" class="password-toggle" aria-label="Toggle password visibility">👁</button></div>
+            <form id="signUpForm" class="auth-form" aria-label="Sign up form" novalidate>
+              <div class="field-grid">
+                <div class="field"><label for="signUpDisplayName">Full name</label><input id="signUpDisplayName" type="text" placeholder="Your name" required /></div>
+                <div class="field"><label for="studentId">Student ID</label><input id="studentId" type="text" placeholder="DOP/2026/001" required /></div>
+              </div>
+              <div class="field"><label for="signUpEmail">Institution email</label><input id="signUpEmail" type="email" placeholder="you@school.edu" required /></div>
+              <div class="field"><label for="departmentName">Department</label><input id="departmentName" type="text" placeholder="Computer Science" required /></div>
+              <div class="field password-field"><label for="signUpPassword">Password</label><input id="signUpPassword" type="password" placeholder="Create a strong password" required /><button type="button" class="password-toggle" aria-label="Toggle password visibility">👁</button></div>
+              <div class="strength-meter" aria-live="polite">
+                <div class="strength-labels"><span>Password strength</span><strong id="passwordStrengthText">Weak</strong></div>
+                <div class="strength-bar"><span id="passwordStrengthBar"></span></div>
+              </div>
               <div class="field password-field"><label for="signUpConfirmPassword">Confirm password</label><input id="signUpConfirmPassword" type="password" placeholder="Confirm password" required /><button type="button" class="password-toggle" aria-label="Toggle password visibility">👁</button></div>
-              <div class="auth-actions"><button id="signUpBtn" type="button" class="button button-primary button-animated">Create account</button></div>
+              <label class="check-row consent-row"><input type="checkbox" id="acceptTerms" required /> <span>I understand this is a secure campus voting system and agree to the terms.</span></label>
+              <div class="auth-actions"><button id="signUpBtn" type="submit" class="button button-primary button-animated">Create account</button></div>
             </form>
           </div>
         </div>

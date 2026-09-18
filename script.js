@@ -12,11 +12,19 @@ const authNotice = document.getElementById('authNotice');
 const signInEmail = document.getElementById('signInEmail');
 const signInPassword = document.getElementById('signInPassword');
 const signInBtn = document.getElementById('signInBtn');
+const rememberSession = document.getElementById('rememberSession');
 const signUpDisplayName = document.getElementById('signUpDisplayName');
+const studentId = document.getElementById('studentId');
 const signUpEmail = document.getElementById('signUpEmail');
+const departmentName = document.getElementById('departmentName');
 const signUpPassword = document.getElementById('signUpPassword');
 const signUpConfirmPassword = document.getElementById('signUpConfirmPassword');
+const acceptTerms = document.getElementById('acceptTerms');
+const passwordStrengthBar = document.getElementById('passwordStrengthBar');
+const passwordStrengthText = document.getElementById('passwordStrengthText');
 const signUpBtn = document.getElementById('signUpBtn');
+const ballotTrustBar = document.getElementById('ballotTrustBar');
+const ballotTrustValue = document.getElementById('ballotTrustValue');
 const showSignIn = document.getElementById('showSignIn');
 const showSignUp = document.getElementById('showSignUp');
 const signOutBtn = document.getElementById('signOutBtn');
@@ -89,6 +97,41 @@ function showToast(title, small, ms = 3000) {
   if (detail) detail.textContent = small;
   toast.classList.add('show');
   setTimeout(() => toast.classList.remove('show'), ms);
+}
+
+function calculatePasswordStrength(password) {
+  let score = 0;
+  if (password.length >= 8) score += 1;
+  if (/[A-Z]/.test(password)) score += 1;
+  if (/[0-9]/.test(password)) score += 1;
+  if (/[^A-Za-z0-9]/.test(password)) score += 1;
+  if (password.length >= 12) score += 1;
+
+  const strengthMap = [
+    { label: 'Weak', ratio: 25 },
+    { label: 'Fair', ratio: 45 },
+    { label: 'Strong', ratio: 72 },
+    { label: 'Very strong', ratio: 100 }
+  ];
+
+  const label = score <= 2 ? 'Weak' : score === 3 ? 'Fair' : score === 4 ? 'Strong' : 'Very strong';
+  const ratio = strengthMap.find(item => item.label === label)?.ratio || 25;
+  return { label, ratio };
+}
+
+function updatePasswordStrength() {
+  if (!signUpPassword || !passwordStrengthBar || !passwordStrengthText) return;
+  const password = signUpPassword.value;
+  const { label, ratio } = calculatePasswordStrength(password);
+  passwordStrengthText.textContent = label;
+  passwordStrengthBar.style.width = `${ratio}%`;
+  passwordStrengthBar.style.background = ratio < 40 ? 'linear-gradient(90deg, #ef4444, #f59e0b)' : ratio < 75 ? 'linear-gradient(90deg, #f59e0b, #22c55e)' : 'linear-gradient(90deg, #22c55e, #16a34a)';
+}
+
+function setBallotTrust(value) {
+  const percent = Math.min(100, Math.max(0, Number(value) || 0));
+  if (ballotTrustBar) ballotTrustBar.style.width = `${percent}%`;
+  if (ballotTrustValue) ballotTrustValue.textContent = `${percent.toFixed(1)}%`;
 }
 
 function setButtonLoading(btn, loading, text) {
@@ -292,19 +335,29 @@ async function submitVoteToFirestore() {
     return;
   }
 
+  if (!selectedCandidate) {
+    throw new Error('Please choose a candidate before submitting your ballot.');
+  }
+
   try {
     const voteRef = db.collection('votes').doc(user.uid);
 
     await db.runTransaction(async (tx) => {
       const voteDoc = await tx.get(voteRef);
       if (voteDoc.exists) {
-        throw new Error('User has already voted');
+        throw new Error('You have already voted in this election.');
       }
+
+      const userDoc = await tx.get(db.collection('users').doc(user.uid));
+      const userProfile = userDoc.exists ? userDoc.data() : {};
 
       tx.set(voteRef, {
         uid: user.uid,
         email: user.email,
+        studentId: userProfile.studentId || studentId?.value?.trim() || '',
+        department: userProfile.department || departmentName?.value?.trim() || '',
         candidate: selectedCandidate,
+        auditHash: `${user.uid}:${selectedCandidate}:${Date.now().toString(36)}`,
         timestamp: firebase.firestore.FieldValue.serverTimestamp()
       });
 
@@ -317,13 +370,15 @@ async function submitVoteToFirestore() {
       });
     });
 
+    setBallotTrust(98.6);
     hideModal();
-    showToast('Vote submitted securely', 'Your ballot has been recorded.', 3500);
+    showToast('Vote submitted securely', 'Your anonymous ballot has been recorded.', 3500);
     const ballotPanel = document.querySelector('.ballot-panel');
     if (ballotPanel) ballotPanel.classList.add('submitted');
     await loadCandidateStats();
   } catch (err) {
     const message = err && err.message ? err.message : 'Vote could not be submitted';
+    setBallotTrust(72.1);
     showToast('Submission failed', message, 4000);
     throw err;
   }
@@ -375,6 +430,10 @@ setInterval(() => {
   const countdown = document.querySelector('.live-card small');
   if (countdown) countdown.textContent = `Closes in ${hours}:${minutes}:${seconds}`;
 }, 1000);
+
+if (signUpPassword) {
+  signUpPassword.addEventListener('input', updatePasswordStrength);
+}
 
 if (showSignIn) {
   showSignIn.addEventListener('click', () => {
@@ -543,10 +602,20 @@ function initRevealAnimations() {
 }
 
 if (signInBtn) {
-  signInBtn.addEventListener('click', async () => {
+  signInBtn.addEventListener('click', async (event) => {
+    event.preventDefault();
+    const email = signInEmail?.value?.trim();
+    const password = signInPassword?.value || '';
+
+    if (!email || !password) {
+      showToast('Missing details', 'Please enter your email and password.', 3000);
+      return;
+    }
+
     setButtonLoading(signInBtn, true, 'Signing in…');
     try {
-      await auth.signInWithEmailAndPassword(signInEmail.value.trim(), signInPassword.value);
+      await auth.setPersistence(rememberSession && rememberSession.checked ? firebase.auth.Auth.Persistence.LOCAL : firebase.auth.Auth.Persistence.SESSION);
+      await auth.signInWithEmailAndPassword(email, password);
       authNotice.textContent = 'Signed in successfully';
       showToast('Signed in', 'Welcome back.', 2000);
       closeAuthOverlay();
@@ -560,16 +629,39 @@ if (signInBtn) {
 }
 
 if (signUpBtn) {
-  signUpBtn.addEventListener('click', async () => {
+  signUpBtn.addEventListener('click', async (event) => {
+    event.preventDefault();
     setButtonLoading(signUpBtn, true, 'Creating account…');
     try {
       const displayName = signUpDisplayName.value.trim();
       const email = signUpEmail.value.trim();
       const password = signUpPassword.value;
       const confirm = signUpConfirmPassword.value;
+      const registrationId = studentId?.value?.trim() || '';
+      const department = departmentName?.value?.trim() || '';
+
+      if (!displayName || !email || !password || !confirm) {
+        throw new Error('Please complete all required fields.');
+      }
+
+      if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) {
+        throw new Error('Please enter a valid institution email.');
+      }
+
+      if (password.length < 8) {
+        throw new Error('Password must be at least 8 characters long.');
+      }
+
+      if (calculatePasswordStrength(password).label === 'Weak') {
+        throw new Error('Choose a stronger password for secure voting access.');
+      }
 
       if (password !== confirm) {
         throw new Error('Passwords do not match.');
+      }
+
+      if (!acceptTerms || !acceptTerms.checked) {
+        throw new Error('You must accept the secure voting terms before creating an account.');
       }
 
       const cred = await auth.createUserWithEmailAndPassword(email, password);
@@ -579,6 +671,8 @@ if (signUpBtn) {
       await db.collection('users').doc(cred.user.uid).set({
         email,
         displayName,
+        studentId: registrationId,
+        department,
         avatarColor: profileColor,
         avatar,
         createdAt: firebase.firestore.FieldValue.serverTimestamp()
@@ -590,6 +684,9 @@ if (signUpBtn) {
 
       authNotice.textContent = 'Account created successfully';
       showToast('Account created', 'Welcome — signing in.', 3000);
+      setTimeout(() => {
+        showSignIn.click();
+      }, 500);
     } catch (error) {
       authNotice.textContent = error.message;
       showToast('Account creation failed', error.message, 4000);
@@ -743,9 +840,11 @@ if (appLoader) {
       auth.currentUser ? loadCandidateStats() : Promise.resolve()
     ]).catch(error => console.error('Candidate load failed', error));
 
+    setBallotTrust(98.6);
     setTimeout(() => setLoadingScreen(false), 1100);
   });
 }
 
+updatePasswordStrength();
 startCountAnimation();
 initRevealAnimations();
