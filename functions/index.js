@@ -1,50 +1,69 @@
 const functions = require('firebase-functions');
 const admin = require('firebase-admin');
+const cors = require('cors');
 
 admin.initializeApp();
 const db = admin.firestore();
 
-exports.submitVote = functions.https.onCall(async (data, context) => {
-  if (!context.auth) {
-    throw new functions.https.HttpsError('unauthenticated', 'User must be signed in');
-  }
+// Enable CORS for all origins (can restrict to specific domains if needed)
+const corsHandler = cors({ origin: true });
 
-  const uid = context.auth.uid;
-  const email = context.auth.token.email || null;
-  const candidate = data && data.candidate;
-  if (!candidate || typeof candidate !== 'string') {
-    throw new functions.https.HttpsError('invalid-argument', 'Missing or invalid candidate');
-  }
+exports.submitVote = functions.https.onRequest((req, res) => {
+  corsHandler(req, res, async () => {
+    // Only allow POST requests
+    if (req.method !== 'POST') {
+      return res.status(405).json({ error: 'Method not allowed' });
+    }
 
-  const voteRef = db.collection('votes').doc(uid);
+    try {
+      // Get Firebase ID token from Authorization header
+      const authHeader = req.headers.authorization || '';
+      const idToken = authHeader.replace('Bearer ', '');
 
-  try {
-    await db.runTransaction(async (tx) => {
-      const snap = await tx.get(voteRef);
-      if (snap.exists) {
-        throw new functions.https.HttpsError('already-exists', 'User has already voted');
+      if (!idToken) {
+        return res.status(401).json({ error: 'User must be signed in' });
       }
 
-      tx.set(voteRef, {
-        uid,
-        email,
-        candidate,
-        timestamp: admin.firestore.FieldValue.serverTimestamp()
+      // Verify the token
+      const decodedToken = await admin.auth().verifyIdToken(idToken);
+      const uid = decodedToken.uid;
+      const email = decodedToken.email || null;
+
+      const candidate = req.body && req.body.candidate;
+      if (!candidate || typeof candidate !== 'string') {
+        return res.status(400).json({ error: 'Missing or invalid candidate' });
+      }
+
+      const voteRef = db.collection('votes').doc(uid);
+
+      await db.runTransaction(async (tx) => {
+        const snap = await tx.get(voteRef);
+        if (snap.exists) {
+          throw new Error('User has already voted');
+        }
+
+        tx.set(voteRef, {
+          uid,
+          email,
+          candidate,
+          timestamp: admin.firestore.FieldValue.serverTimestamp()
+        });
+
+        const eventsRef = db.collection('events').doc();
+        tx.set(eventsRef, {
+          type: 'vote_submitted',
+          uid,
+          email,
+          candidate,
+          time: admin.firestore.FieldValue.serverTimestamp()
+        });
       });
 
-      const eventsRef = db.collection('events').doc();
-      tx.set(eventsRef, {
-        type: 'vote_submitted',
-        uid,
-        candidate,
-        time: admin.firestore.FieldValue.serverTimestamp()
-      });
-    });
-  } catch (err) {
-    if (err instanceof functions.https.HttpsError) throw err;
-    console.error('submitVote error', err);
-    throw new functions.https.HttpsError('internal', 'Failed to submit vote');
-  }
-
-  return { success: true };
+      return res.status(200).json({ success: true, message: 'Vote submitted successfully' });
+    } catch (err) {
+      console.error('submitVote error', err);
+      const message = err.message || 'Internal server error';
+      return res.status(500).json({ error: message });
+    }
+  });
 });

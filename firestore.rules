@@ -24,7 +24,7 @@ service cloud.firestore {
         && request.resource.data.keys().hasOnly(['uid', 'email', 'candidate', 'timestamp'])
         && !exists(/databases/$(database)/documents/votes/$(uid));
 
-      allow read: if isSignedIn() && (isAdmin() || request.auth.uid == uid);
+      allow read: if isSignedIn();
       allow update, delete: if isAdmin();
     }
 

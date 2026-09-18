@@ -284,12 +284,25 @@ async function submitVoteToFirestore() {
   }
 
   try {
-    if (!functions || !functions.httpsCallable) {
-      showToast('Submission failed', 'Server functions unavailable.', 4000);
-      return;
+    // Get ID token for authentication
+    const idToken = await user.getIdToken();
+
+    // Call the HTTP Cloud Function with CORS support
+    const response = await fetch('https://us-central1-votesafe-47903.cloudfunctions.net/submitVote', {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        'Authorization': `Bearer ${idToken}`
+      },
+      body: JSON.stringify({ candidate: selectedCandidate })
+    });
+
+    const result = await response.json();
+
+    if (!response.ok) {
+      throw new Error(result.error || 'Failed to submit vote');
     }
-    const submitVoteData = functions.httpsCallable('submitVote');
-    await submitVoteData({ candidate: selectedCandidate });
+
     hideModal();
     showToast('Vote submitted securely', 'Your ballot has been recorded.', 3500);
     const ballotPanel = document.querySelector('.ballot-panel');
