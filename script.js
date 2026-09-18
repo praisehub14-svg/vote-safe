@@ -171,9 +171,9 @@ function renderCandidates(candidates) {
     button.dataset.candidate = candidate.name;
     button.dataset.id = candidate.id || candidate.name;
 
-    const candidateAvatar = generateProAvatarDataUrl(candidate.name, candidate.party || 'Candidate', candidate.color || '#159b63');
+    const candidateAvatar = candidate.imageUrl || candidate.avatar || generateProAvatarDataUrl(candidate.name, candidate.party || 'Candidate', candidate.color || '#159b63');
     button.innerHTML = `
-      <img class="candidate-avatar" src="${candidateAvatar}" alt="${escapeHtml(candidate.name)}" />
+      <img class="candidate-avatar" src="${escapeHtml(candidateAvatar)}" alt="${escapeHtml(candidate.name)}" />
       <span class="candidate-details">
         <strong>${escapeHtml(candidate.name)}</strong>
         <small>${escapeHtml(candidate.party || 'Independent candidate')}</small>
@@ -240,6 +240,9 @@ async function loadCandidateStats() {
 
   renderCandidates(candidates);
 }
+
+// keep candidate list in sync for signed-in users
+let candidatesUnsub = null;
 
 function openModal() {
   if (!selectedCandidate || !reviewModal) return;
@@ -680,6 +683,12 @@ auth.onAuthStateChanged(async user => {
   if (signOutBtn) signOutBtn.hidden = false;
 
   await updateHeader(user);
+  // start live candidate updates for this user
+  if (candidatesUnsub) candidatesUnsub();
+  candidatesUnsub = db.collection('candidates').orderBy('order').onSnapshot(() => {
+    // refresh stats (counts + candidate list)
+    loadCandidateStats().catch(err => console.error('loadCandidateStats failed', err));
+  });
 
   if (auth.currentUser && !auth.currentUser.emailVerified) {
     // keep signed in users in the app without blocking access

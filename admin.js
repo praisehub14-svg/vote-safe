@@ -26,6 +26,7 @@ const userListEl = document.getElementById('userList');
 const addCandidateForm = document.getElementById('addCandidateForm');
 const candidateName = document.getElementById('candidateName');
 const candidateParty = document.getElementById('candidateParty');
+const candidateImage = document.getElementById('candidateImage');
 const signOutAdminBtn = document.getElementById('signOutAdmin');
 
 function renderBreakdown(candidates, voteMap) {
@@ -122,17 +123,20 @@ if (addCandidateForm) {
     event.preventDefault();
     const name = candidateName.value.trim();
     const party = candidateParty.value.trim();
+    const imageUrl = candidateImage ? candidateImage.value.trim() : '';
 
     if (!name || !party) return;
 
     await db.collection('candidates').add({
       name,
       party,
+      imageUrl: imageUrl || null,
       order: Date.now()
     });
 
     candidateName.value = '';
     candidateParty.value = '';
+    if (candidateImage) candidateImage.value = '';
   });
 }
 
