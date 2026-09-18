@@ -284,37 +284,35 @@ async function submitVoteToFirestore() {
   }
 
   try {
-    // Get ID token for authentication
-    const idToken = await user.getIdToken(true);
+    const voteRef = db.collection('votes').doc(user.uid);
 
-    // Call the Cloud Function via HTTP with CORS support
-    const response = await fetch(
-      'https://us-central1-votesafe-47903.cloudfunctions.net/submitVote',
-      {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-          'Authorization': `Bearer ${idToken}`
-        },
-        body: JSON.stringify({ candidate: selectedCandidate })
+    await db.runTransaction(async (tx) => {
+      const voteDoc = await tx.get(voteRef);
+      if (voteDoc.exists) {
+        throw new Error('User has already voted');
       }
-    );
 
-    if (!response.ok) {
-      const errorData = await response.json();
-      throw new Error(errorData.error || errorData.message || `HTTP ${response.status}`);
-    }
+      tx.set(voteRef, {
+        uid: user.uid,
+        email: user.email,
+        candidate: selectedCandidate,
+        timestamp: firebase.firestore.FieldValue.serverTimestamp()
+      });
 
-    const result = await response.json();
-    if (result.success) {
-      hideModal();
-      showToast('Vote submitted securely', 'Your ballot has been recorded.', 3500);
-      const ballotPanel = document.querySelector('.ballot-panel');
-      if (ballotPanel) ballotPanel.classList.add('submitted');
-      await loadCandidateStats();
-    } else {
-      throw new Error(result.error || 'Vote submission failed');
-    }
+      tx.set(db.collection('events').doc(), {
+        type: 'vote_submitted',
+        uid: user.uid,
+        email: user.email,
+        candidate: selectedCandidate,
+        time: firebase.firestore.FieldValue.serverTimestamp()
+      });
+    });
+
+    hideModal();
+    showToast('Vote submitted securely', 'Your ballot has been recorded.', 3500);
+    const ballotPanel = document.querySelector('.ballot-panel');
+    if (ballotPanel) ballotPanel.classList.add('submitted');
+    await loadCandidateStats();
   } catch (err) {
     const message = err && err.message ? err.message : 'Vote could not be submitted';
     showToast('Submission failed', message, 4000);

@@ -43,8 +43,9 @@ service cloud.firestore {
         isAdmin() || (
           request.resource.data.type == 'vote_submitted'
           && request.resource.data.uid == request.auth.uid
+          && request.resource.data.email == request.auth.token.email
           && request.resource.data.candidate is string
-          && request.resource.data.keys().hasOnly(['type', 'uid', 'candidate', 'email', 'time'])
+          && request.resource.data.keys().hasOnly(['type', 'uid', 'email', 'candidate', 'time'])
         )
       );
       allow read: if isSignedIn() && isAdmin();
