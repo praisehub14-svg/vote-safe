@@ -5,6 +5,10 @@ function isRemovedCandidate(candidate) {
   return removedCandidateNames.has(String(candidate.name || '').trim().toLowerCase());
 }
 
+function getVisibleCandidates(candidates) {
+  return candidates.filter(candidate => !isRemovedCandidate(candidate)).slice(0, 5);
+}
+
 const firebaseConfig = {
   apiKey: 'AIzaSyCRoR8aw1qxlsJgzKuH2O_h9fLqb8KcovU',
   authDomain: 'votesafe-47903.firebaseapp.com',
@@ -174,7 +178,7 @@ auth.onAuthStateChanged(async user => {
   }
 
   db.collection('candidates').orderBy('order').onSnapshot(snapshot => {
-    const candidates = snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() })).filter(candidate => !isRemovedCandidate(candidate));
+    const candidates = getVisibleCandidates(snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() })));
     db.collection('users').onSnapshot(usersSnapshot => {
       const users = usersSnapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
       db.collection('votes').orderBy('timestamp', 'desc').onSnapshot(votesSnapshot => {

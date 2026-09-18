@@ -59,6 +59,10 @@ function isRemovedCandidate(candidate) {
   return removedCandidateNames.has(String(candidate.name || '').trim().toLowerCase());
 }
 
+function getVisibleCandidates(candidates) {
+  return candidates.filter(candidate => !isRemovedCandidate(candidate)).slice(0, 5);
+}
+
 function setAdminControlsVisible(isAdmin) {
   const adminVisible = !!isAdmin && !!auth.currentUser && auth.currentUser.email && auth.currentUser.email.toLowerCase() === adminEmail.toLowerCase();
   [adminBtn, adminBtnMobile].forEach(button => {
@@ -316,7 +320,7 @@ async function ensureSeedCandidates() {
 
   const snapshot = await db.collection('candidates').orderBy('order').get();
   if (!snapshot.empty) {
-    const list = snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() })).filter(candidate => !isRemovedCandidate(candidate));
+    const list = getVisibleCandidates(snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() })));
     renderCandidates(list);
     return;
   }
@@ -338,7 +342,7 @@ async function loadCandidateStats() {
   const candidateSnapshot = await db.collection('candidates').orderBy('order').get();
 
   if (!currentUserIsAdmin) {
-    renderCandidates(candidateSnapshot.docs.map(doc => ({ id: doc.id, ...doc.data(), votes: 0 })).filter(candidate => !isRemovedCandidate(candidate)));
+    renderCandidates(getVisibleCandidates(candidateSnapshot.docs.map(doc => ({ id: doc.id, ...doc.data(), votes: 0 }))));
     return;
   }
 
@@ -354,9 +358,10 @@ async function loadCandidateStats() {
     id: doc.id,
     ...doc.data(),
     votes: voteCounts[doc.data().name] || 0
-  })).filter(candidate => !isRemovedCandidate(candidate));
+  }));
+  const visibleCandidates = getVisibleCandidates(candidates);
 
-  renderCandidates(candidates);
+  renderCandidates(visibleCandidates);
 }
 
 // keep candidate list in sync for signed-in users
