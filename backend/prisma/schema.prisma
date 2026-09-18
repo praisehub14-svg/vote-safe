@@ -7,38 +7,221 @@ datasource db {
   url      = env("DATABASE_URL")
 }
 
+enum UserRole {
+  STUDENT
+  ADMIN
+}
+
+enum UserStatus {
+  ACTIVE
+  INACTIVE
+  SUSPENDED
+}
+
+enum AdminRole {
+  SUPER_ADMIN
+  ELECTION_ADMIN
+}
+
+enum StudentAccountStatus {
+  ACTIVE
+  INACTIVE
+  SUSPENDED
+}
+
+enum ElectionStatus {
+  DRAFT
+  UPCOMING
+  ACTIVE
+  CLOSED
+}
+
+enum EligibilityStatus {
+  ELIGIBLE
+  INELIGIBLE
+  DISABLED
+}
+
+enum BallotStatus {
+  SUBMITTED
+  REJECTED
+  FLAGGED
+}
+
+model User {
+  id            Int        @id @default(autoincrement())
+  email         String     @unique
+  passwordHash  String     @map("password_hash")
+  role          UserRole
+  status        UserStatus @default(ACTIVE)
+  createdAt     DateTime   @default(now()) @map("created_at")
+  updatedAt     DateTime   @updatedAt @map("updated_at")
+  student       Student?
+  admin         Admin?
+
+  @@map("users")
+}
+
+model Student {
+  id            Int                    @id @default(autoincrement())
+  user          User                   @relation(fields: [userId], references: [id], onDelete: Cascade)
+  userId        Int                    @unique @map("user_id")
+  studentId     String                 @unique @map("student_id")
+  fullName      String                 @map("full_name")
+  department    String
+  level         String
+  accountStatus StudentAccountStatus   @default(ACTIVE) @map("account_status")
+  createdAt     DateTime               @default(now()) @map("created_at")
+  updatedAt     DateTime               @updatedAt @map("updated_at")
+  eligibilities Eligibility[]
+
+  @@map("students")
+}
+
+model Admin {
+  id          Int        @id @default(autoincrement())
+  user        User       @relation(fields: [userId], references: [id], onDelete: Cascade)
+  userId      Int        @unique @map("user_id")
+  fullName    String     @map("full_name")
+  adminRole   AdminRole  @map("admin_role")
+  status      UserStatus @default(ACTIVE)
+  createdAt   DateTime   @default(now()) @map("created_at")
+  updatedAt   DateTime   @updatedAt @map("updated_at")
+  elections   Election[] @relation("ElectionAdmin")
+
+  @@map("admins")
+}
+
 model Election {
-  id        Int       @id @default(autoincrement())
-  title     String
-  startsAt  DateTime
-  endsAt    DateTime
-  publicKey String?   @db.Text
-  candidates Candidate[]
-  ballots   Ballot[]
+  id                 Int              @id @default(autoincrement())
+  title              String
+  description        String?          @db.Text
+  status             ElectionStatus   @default(DRAFT)
+  startAt            DateTime         @map("start_at")
+  endAt              DateTime         @map("end_at")
+  resultsPublished   Boolean          @default(false) @map("results_published")
+  createdByAdminId   Int?             @map("created_by_admin_id")
+  createdByAdmin     Admin?           @relation("ElectionAdmin", fields: [createdByAdminId], references: [id])
+  createdAt          DateTime         @default(now()) @map("created_at")
+  updatedAt          DateTime         @updatedAt @map("updated_at")
+  positions          Position[]
+  candidates         Candidate[]
+  ballots            Ballot[]
+  eligibilities     Eligibility[]
+  results            ElectionResult[]
+
+  @@map("elections")
+}
+
+model Position {
+  id          Int         @id @default(autoincrement())
+  election    Election    @relation(fields: [electionId], references: [id], onDelete: Cascade)
+  electionId  Int         @map("election_id")
+  title       String
+  description String?    @db.Text
+  maxVotesPerVoter Int     @default(1) @map("max_votes_per_voter")
+  isActive    Boolean     @default(true) @map("is_active")
+  createdAt   DateTime    @default(now()) @map("created_at")
+  candidates  Candidate[]
+  ballotItems BallotItem[]
+  results     ElectionResult[]
+
+  @@unique([electionId, title])
+  @@map("positions")
 }
 
 model Candidate {
-  id         Int      @id @default(autoincrement())
-  election   Election @relation(fields: [electionId], references: [id])
-  electionId Int
-  name       String
-  party      String?
-  order      Int?
+  id           Int          @id @default(autoincrement())
+  election     Election     @relation(fields: [electionId], references: [id], onDelete: Cascade)
+  electionId   Int          @map("election_id")
+  position     Position     @relation(fields: [positionId], references: [id], onDelete: Cascade)
+  positionId   Int          @map("position_id")
+  name         String
+  department   String
+  photoUrl     String?      @map("photo_url")
+  manifesto    String?      @db.Text
+  biography    String?      @db.Text
+  status       Boolean      @default(true)
+  createdAt    DateTime     @default(now()) @map("created_at")
+  ballotItems  BallotItem[]
+  electionResults ElectionResult[]
+
+  @@unique([electionId, positionId, name])
+  @@map("candidates")
+}
+
+model Eligibility {
+  id          Int               @id @default(autoincrement())
+  election    Election          @relation(fields: [electionId], references: [id], onDelete: Cascade)
+  electionId  Int               @map("election_id")
+  student     Student           @relation(fields: [studentId], references: [id], onDelete: Cascade)
+  studentId   Int               @map("student_id")
+  status      EligibilityStatus  @default(ELIGIBLE)
+  eligibleAt  DateTime?         @map("eligible_at")
+  reason      String?
+  createdAt   DateTime          @default(now()) @map("created_at")
+
+  @@unique([electionId, studentId])
+  @@map("eligibility")
 }
 
 model Ballot {
-  id         Int      @id @default(autoincrement())
-  election   Election @relation(fields: [electionId], references: [id])
-  electionId Int
-  ciphertext String   @db.Text
-  encKey     String   @db.Text
-  submittedAt DateTime @default(now())
-  meta       String?  @db.Text
+  id                 Int          @id @default(autoincrement())
+  election           Election     @relation(fields: [electionId], references: [id], onDelete: Cascade)
+  electionId         Int          @map("election_id")
+  voterTokenHash     String       @unique @map("voter_token_hash")
+  encryptedBallotBlob String      @db.Text @map("encrypted_ballot_blob")
+  submittedAt        DateTime     @default(now()) @map("submitted_at")
+  status             BallotStatus @default(SUBMITTED)
+  verificationCode   String?      @unique @map("verification_code")
+  createdAt          DateTime     @default(now()) @map("created_at")
+  ballotItems        BallotItem[]
+
+  @@map("ballots")
 }
 
-model Voter {
-  id        Int     @id @default(autoincrement())
-  studentId String  @unique
-  name      String?
-  allowed   Boolean @default(false)
+model BallotItem {
+  id          Int         @id @default(autoincrement())
+  ballot      Ballot      @relation(fields: [ballotId], references: [id], onDelete: Cascade)
+  ballotId    Int         @map("ballot_id")
+  position    Position    @relation(fields: [positionId], references: [id], onDelete: Cascade)
+  positionId  Int         @map("position_id")
+  candidate   Candidate   @relation(fields: [candidateId], references: [id], onDelete: Cascade)
+  candidateId Int         @map("candidate_id")
+  choiceHash  String      @map("choice_hash")
+  createdAt   DateTime    @default(now()) @map("created_at")
+
+  @@unique([ballotId, positionId])
+  @@map("ballot_items")
 }
+
+model ElectionResult {
+  id          Int      @id @default(autoincrement())
+  election    Election @relation(fields: [electionId], references: [id], onDelete: Cascade)
+  electionId  Int      @map("election_id")
+  position    Position @relation(fields: [positionId], references: [id], onDelete: Cascade)
+  positionId  Int      @map("position_id")
+  candidate   Candidate @relation(fields: [candidateId], references: [id], onDelete: Cascade)
+  candidateId Int      @map("candidate_id")
+  totalVotes  Int      @default(0) @map("total_votes")
+  percentage  Decimal? @db.Decimal(5, 2)
+  publishedAt DateTime? @map("published_at")
+  createdAt   DateTime @default(now()) @map("created_at")
+
+  @@unique([electionId, positionId, candidateId])
+  @@map("election_results")
+}
+
+model AuditLog {
+  id          Int      @id @default(autoincrement())
+  actorType   String   @map("actor_type")
+  actorId     Int?     @map("actor_id")
+  action      String
+  entityType  String   @map("entity_type")
+  entityId    Int?     @map("entity_id")
+  metadata    Json?
+  createdAt   DateTime @default(now()) @map("created_at")
+
+  @@map("audit_logs")
+}
+

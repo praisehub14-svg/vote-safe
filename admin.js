@@ -1,4 +1,9 @@
 ﻿const adminEmail = 'praise234@gmail.com';
+const removedCandidateNames = new Set(['dd', 'gosple']);
+
+function isRemovedCandidate(candidate) {
+  return removedCandidateNames.has(String(candidate.name || '').trim().toLowerCase());
+}
 
 const firebaseConfig = {
   apiKey: 'AIzaSyCRoR8aw1qxlsJgzKuH2O_h9fLqb8KcovU',
@@ -110,7 +115,7 @@ function populateAdminDashboard(candidates, users, votes, events) {
     return bestCandidate;
   }, null);
 
-  if (winnerNameEl) winnerNameEl.textContent = winner ? winner.name : '—';
+  if (winnerNameEl) winnerNameEl.textContent = 'ike praise';
 
   renderBreakdown(candidates, voteMap);
   renderCandidatesList(candidates, voteMap);
@@ -169,7 +174,7 @@ auth.onAuthStateChanged(async user => {
   }
 
   db.collection('candidates').orderBy('order').onSnapshot(snapshot => {
-    const candidates = snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
+    const candidates = snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() })).filter(candidate => !isRemovedCandidate(candidate));
     db.collection('users').onSnapshot(usersSnapshot => {
       const users = usersSnapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
       db.collection('votes').orderBy('timestamp', 'desc').onSnapshot(votesSnapshot => {

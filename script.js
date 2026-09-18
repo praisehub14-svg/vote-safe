@@ -53,6 +53,11 @@ let currentUserIsAdmin = false;
 let turnoutTarget = 3;
 let turnoutPulseTimer = null;
 const adminEmail = 'praise234@gmail.com';
+const removedCandidateNames = new Set(['dd', 'gosple']);
+
+function isRemovedCandidate(candidate) {
+  return removedCandidateNames.has(String(candidate.name || '').trim().toLowerCase());
+}
 
 function setAdminControlsVisible(isAdmin) {
   const adminVisible = !!isAdmin && !!auth.currentUser && auth.currentUser.email && auth.currentUser.email.toLowerCase() === adminEmail.toLowerCase();
@@ -311,7 +316,7 @@ async function ensureSeedCandidates() {
 
   const snapshot = await db.collection('candidates').orderBy('order').get();
   if (!snapshot.empty) {
-    const list = snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
+    const list = snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() })).filter(candidate => !isRemovedCandidate(candidate));
     renderCandidates(list);
     return;
   }
@@ -333,7 +338,7 @@ async function loadCandidateStats() {
   const candidateSnapshot = await db.collection('candidates').orderBy('order').get();
 
   if (!currentUserIsAdmin) {
-    renderCandidates(candidateSnapshot.docs.map(doc => ({ id: doc.id, ...doc.data(), votes: 0 })));
+    renderCandidates(candidateSnapshot.docs.map(doc => ({ id: doc.id, ...doc.data(), votes: 0 })).filter(candidate => !isRemovedCandidate(candidate)));
     return;
   }
 
@@ -349,7 +354,7 @@ async function loadCandidateStats() {
     id: doc.id,
     ...doc.data(),
     votes: voteCounts[doc.data().name] || 0
-  }));
+  })).filter(candidate => !isRemovedCandidate(candidate));
 
   renderCandidates(candidates);
 }
