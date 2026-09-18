@@ -689,6 +689,12 @@ auth.onAuthStateChanged(async user => {
     // refresh stats (counts + candidate list)
     loadCandidateStats().catch(err => console.error('loadCandidateStats failed', err));
   });
+  // load immediately for this session
+  try {
+    await loadCandidateStats();
+  } catch (err) {
+    console.error('Initial loadCandidateStats failed', err);
+  }
 
   if (auth.currentUser && !auth.currentUser.emailVerified) {
     // keep signed in users in the app without blocking access
