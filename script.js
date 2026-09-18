@@ -56,7 +56,7 @@ const firebaseConfig = {
 firebase.initializeApp(firebaseConfig);
 const auth = firebase.auth();
 const db = firebase.firestore();
-const functions = firebase.functions();
+const functions = typeof firebase.functions === 'function' ? firebase.functions() : null;
 
 function escapeHtml(value) {
   return String(value || '').replace(/[&<>"']/g, char => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#039;' }[char]));
@@ -281,6 +281,10 @@ async function submitVoteToFirestore() {
   }
 
   try {
+    if (!functions || !functions.httpsCallable) {
+      showToast('Submission failed', 'Server functions unavailable.', 4000);
+      return;
+    }
     const submitVoteData = functions.httpsCallable('submitVote');
     await submitVoteData({ candidate: selectedCandidate });
     hideModal();
