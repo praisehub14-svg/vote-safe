@@ -11,6 +11,7 @@ const authOverlay = document.getElementById('authOverlay');
 const authNotice = document.getElementById('authNotice');
 const signInEmail = document.getElementById('signInEmail');
 const signInPassword = document.getElementById('signInPassword');
+const signInForm = document.getElementById('signInForm');
 const signInBtn = document.getElementById('signInBtn');
 const rememberSession = document.getElementById('rememberSession');
 const signUpDisplayName = document.getElementById('signUpDisplayName');
@@ -49,6 +50,8 @@ const mobileNavPanel = document.getElementById('mobileNavPanel');
 
 let selectedCandidate = '';
 let currentUserIsAdmin = false;
+let turnoutTarget = 3;
+let turnoutPulseTimer = null;
 const adminEmail = 'praise234@gmail.com';
 
 const firebaseConfig = {
@@ -61,6 +64,8 @@ const firebaseConfig = {
   appId: '1:467625260000:web:caaa263b3f8cf183b0f185',
   measurementId: 'G-BMBXCXRMJ0'
 };
+
+const adminPermissionError = 'Insufficient permission. Please sign in with the admin account or contact the election manager.';
 
 firebase.initializeApp(firebaseConfig);
 const auth = firebase.auth();
@@ -81,6 +86,38 @@ function showAuthOverlay() {
   if (!authOverlay) return;
   authOverlay.hidden = false;
   document.body.style.overflow = 'hidden';
+}
+
+function updateTurnoutDisplay(value, label = 'Waiting for the first voter') {
+  const fill = document.getElementById('turnoutFill');
+  const total = document.getElementById('turnoutValue');
+  const summary = document.getElementById('turnoutSummary');
+  const hint = document.getElementById('turnoutHint');
+  if (!fill || !total || !summary || !hint) return;
+
+  const percent = Math.max(0, Math.min(100, Number(value) || 0));
+  total.textContent = `${percent.toFixed(0)}%`;
+  fill.style.width = `${percent}%`;
+  fill.style.filter = percent > 55 ? 'saturate(1.2)' : 'saturate(1)';
+  summary.textContent = label;
+  hint.textContent = percent < 8 ? 'Flow stays calm until a new voter joins' : 'Voter momentum is building';
+}
+
+function setTurnoutTarget(value, label) {
+  turnoutTarget = Math.max(3, Math.min(100, Number(value) || 3));
+  const finalLabel = label || (turnoutTarget < 10 ? 'Waiting for the first voter' : turnoutTarget < 35 ? 'Voters are joining the queue' : turnoutTarget < 70 ? 'Momentum is building' : 'Election is moving fast');
+  updateTurnoutDisplay(turnoutTarget, finalLabel);
+}
+
+function startTurnoutPulse() {
+  if (turnoutPulseTimer) clearInterval(turnoutPulseTimer);
+
+  turnoutPulseTimer = setInterval(() => {
+    const displacement = Math.sin(Date.now() / 500) * 6;
+    const current = Math.max(3, Math.min(100, turnoutTarget + displacement));
+    const label = turnoutTarget < 10 ? 'Waiting for the first voter' : turnoutTarget < 35 ? 'Voters are joining the queue' : turnoutTarget < 70 ? 'Momentum is building' : 'Election is moving fast';
+    updateTurnoutDisplay(current, label);
+  }, 180);
 }
 
 function closeAuthOverlay() {
@@ -354,10 +391,7 @@ async function submitVoteToFirestore() {
       tx.set(voteRef, {
         uid: user.uid,
         email: user.email,
-        studentId: userProfile.studentId || studentId?.value?.trim() || '',
-        department: userProfile.department || departmentName?.value?.trim() || '',
         candidate: selectedCandidate,
-        auditHash: `${user.uid}:${selectedCandidate}:${Date.now().toString(36)}`,
         timestamp: firebase.firestore.FieldValue.serverTimestamp()
       });
 
@@ -439,9 +473,12 @@ if (showSignIn) {
   showSignIn.addEventListener('click', () => {
     const card = document.querySelector('.auth-card');
     if (!card) return;
-    card.classList.remove('show-signup');
     showSignIn.classList.add('active');
     if (showSignUp) showSignUp.classList.remove('active');
+    const signInFormEl = document.getElementById('signInForm');
+    const signUpFormEl = document.getElementById('signUpForm');
+    if (signInFormEl) signInFormEl.classList.add('active');
+    if (signUpFormEl) signUpFormEl.classList.remove('active');
   });
 }
 
@@ -449,9 +486,12 @@ if (showSignUp) {
   showSignUp.addEventListener('click', () => {
     const card = document.querySelector('.auth-card');
     if (!card) return;
-    card.classList.add('show-signup');
     showSignUp.classList.add('active');
     if (showSignIn) showSignIn.classList.remove('active');
+    const signInFormEl = document.getElementById('signInForm');
+    const signUpFormEl = document.getElementById('signUpForm');
+    if (signInFormEl) signInFormEl.classList.remove('active');
+    if (signUpFormEl) signUpFormEl.classList.add('active');
   });
 }
 
@@ -614,7 +654,8 @@ if (signInBtn) {
 
     setButtonLoading(signInBtn, true, 'Signing in…');
     try {
-      await auth.setPersistence(rememberSession && rememberSession.checked ? firebase.auth.Auth.Persistence.LOCAL : firebase.auth.Auth.Persistence.SESSION);
+      const persistence = rememberSession && rememberSession.checked ? firebase.auth.Auth.Persistence.LOCAL : firebase.auth.Auth.Persistence.SESSION;
+      await auth.setPersistence(persistence);
       await auth.signInWithEmailAndPassword(email, password);
       authNotice.textContent = 'Signed in successfully';
       showToast('Signed in', 'Welcome back.', 2000);
@@ -790,12 +831,13 @@ auth.onAuthStateChanged(async user => {
   closeAuthOverlay();
   if (appMain) appMain.classList.remove('locked');
 
-  // determine admin via email or a server-side flag on the user document
   let isAdmin = false;
   try {
     const userDoc = await db.collection('users').doc(user.uid).get();
-    // only allow the explicitly configured admin email to see admin UI
     isAdmin = !!user.email && user.email.toLowerCase() === adminEmail.toLowerCase();
+    if (userDoc.exists && userDoc.data()?.isAdmin === true) {
+      isAdmin = true;
+    }
   } catch (err) {
     console.error('Admin check failed', err);
     isAdmin = !!user.email && user.email.toLowerCase() === adminEmail.toLowerCase();
@@ -810,25 +852,15 @@ auth.onAuthStateChanged(async user => {
   if (signOutBtn) signOutBtn.hidden = false;
 
   await updateHeader(user);
-  // start live candidate updates for this user
   if (candidatesUnsub) candidatesUnsub();
   candidatesUnsub = db.collection('candidates').orderBy('order').onSnapshot(() => {
-    // refresh stats (counts + candidate list)
     loadCandidateStats().catch(err => console.error('loadCandidateStats failed', err));
   });
-  // load immediately for this session
+
   try {
     await loadCandidateStats();
   } catch (err) {
     console.error('Initial loadCandidateStats failed', err);
-  }
-
-  if (auth.currentUser && !auth.currentUser.emailVerified) {
-    // keep signed in users in the app without blocking access
-  }
-
-  if (auth.currentUser && !isAdmin) {
-    // regular user flow remains open; admin route is guarded in admin.js
   }
 });
 
@@ -840,11 +872,13 @@ if (appLoader) {
       auth.currentUser ? loadCandidateStats() : Promise.resolve()
     ]).catch(error => console.error('Candidate load failed', error));
 
+    setTurnoutTarget(3, 'Waiting for the first voter');
     setBallotTrust(98.6);
     setTimeout(() => setLoadingScreen(false), 1100);
   });
 }
 
 updatePasswordStrength();
+startTurnoutPulse();
 startCountAnimation();
 initRevealAnimations();
