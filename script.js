@@ -40,6 +40,7 @@ const mobileMenuToggle = document.getElementById('mobileMenuToggle');
 const mobileNavPanel = document.getElementById('mobileNavPanel');
 
 let selectedCandidate = '';
+let currentUserIsAdmin = false;
 const adminEmail = 'praise234@gmail.com';
 
 const firebaseConfig = {
@@ -172,13 +173,15 @@ function renderCandidates(candidates) {
     button.dataset.id = candidate.id || candidate.name;
 
     const candidateAvatar = candidate.imageUrl || candidate.avatar || generateProAvatarDataUrl(candidate.name, candidate.party || 'Candidate', candidate.color || '#159b63');
+    const voteMeta = currentUserIsAdmin ? `<span class="candidate-meta">${candidate.votes || 0} votes</span>` : '<span class="candidate-meta is-private">Private</span>';
+
     button.innerHTML = `
       <img class="candidate-avatar" src="${escapeHtml(candidateAvatar)}" alt="${escapeHtml(candidate.name)}" />
       <span class="candidate-details">
         <strong>${escapeHtml(candidate.name)}</strong>
         <small>${escapeHtml(candidate.party || 'Independent candidate')}</small>
       </span>
-      <span class="candidate-meta">${candidate.votes || 0} votes</span>
+      ${voteMeta}
       <span class="candidate-radio"></span>
     `;
 
@@ -223,6 +226,13 @@ async function ensureSeedCandidates() {
 async function loadCandidateStats() {
   if (!auth.currentUser) return;
 
+  const candidateSnapshot = await db.collection('candidates').orderBy('order').get();
+
+  if (!currentUserIsAdmin) {
+    renderCandidates(candidateSnapshot.docs.map(doc => ({ id: doc.id, ...doc.data(), votes: 0 })));
+    return;
+  }
+
   const votesSnapshot = await db.collection('votes').get();
   const voteCounts = {};
   votesSnapshot.forEach(doc => {
@@ -231,7 +241,6 @@ async function loadCandidateStats() {
     voteCounts[candidate] = (voteCounts[candidate] || 0) + 1;
   });
 
-  const candidateSnapshot = await db.collection('candidates').orderBy('order').get();
   const candidates = candidateSnapshot.docs.map(doc => ({
     id: doc.id,
     ...doc.data(),
@@ -671,6 +680,7 @@ if (saveProfile) {
 
 auth.onAuthStateChanged(async user => {
   if (!user) {
+    currentUserIsAdmin = false;
     showAuthOverlay();
     if (headerUser) headerUser.hidden = true;
     if (profileBtn) profileBtn.hidden = true;
@@ -693,6 +703,8 @@ auth.onAuthStateChanged(async user => {
     console.error('Admin check failed', err);
     isAdmin = !!user.email && user.email.toLowerCase() === adminEmail.toLowerCase();
   }
+
+  currentUserIsAdmin = isAdmin;
 
   if (headerUser) headerUser.hidden = false;
   if (profileBtn) profileBtn.hidden = false;

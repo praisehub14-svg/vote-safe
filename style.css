@@ -20,6 +20,7 @@ body {
   background: linear-gradient(180deg, #f5fff9 0%, #edf9f2 100%);
   color: var(--ink);
   line-height: 1.5;
+  overflow-x: hidden;
 }
 body.dark {
   --ink: #e8fff4;
@@ -163,6 +164,15 @@ body.dark .site-header { background: rgba(7, 24, 18, 0.72); }
 .candidate-details strong { font-size: 1rem; }
 .candidate-details small { color: var(--muted); }
 .candidate-meta { font-size: 12px; color: var(--green-dark); font-weight: 700; margin-right: 10px; }
+.candidate-meta.is-private {
+  color: var(--muted);
+  background: rgba(16, 37, 29, 0.05);
+  border-radius: 999px;
+  padding: 6px 8px;
+  font-size: 10px;
+  letter-spacing: .08em;
+  text-transform: uppercase;
+}
 .candidate-radio { width: 22px; height: 22px; border-radius: 50%; border: 2px solid rgba(16,37,29,.24); position: relative; }
 .candidate-card.selected .candidate-radio { border-color: var(--green); }
 .candidate-card.selected .candidate-radio::after { content: ''; position: absolute; inset: 4px; border-radius: 50%; background: var(--green); }
@@ -258,21 +268,86 @@ body.dark .site-header { background: rgba(7, 24, 18, 0.72); }
 @media (max-width: 920px) {
   .main-nav, .hide-mobile { display: none; }
   .mobile-menu-toggle { display: block; }
-  .mobile-nav-panel { display: none; flex-direction: column; gap: 12px; padding: 12px 0 0; width: 100%; }
+  .mobile-nav-panel {
+    display: none;
+    flex-direction: column;
+    gap: 12px;
+    padding: 12px 0 0;
+    width: 100%;
+    background: rgba(255,255,255,0.75);
+    border: 1px solid rgba(21,155,99,0.08);
+    border-radius: 18px;
+    margin-top: 12px;
+    padding: 14px;
+  }
   .mobile-nav-panel.open { display: flex; }
-  .site-header { height: auto; padding: 16px 0; flex-wrap: wrap; }
-  .hero { grid-template-columns: 1fr; }
+  .mobile-nav-panel .button, .mobile-nav-panel .nav-link { width: 100%; }
+  .site-header {
+    height: auto;
+    padding: 16px 0;
+    flex-wrap: wrap;
+    position: sticky;
+  }
+  .hero {
+    grid-template-columns: 1fr;
+    padding-top: 28px;
+  }
+  .hero-copy { text-align: center; }
+  .hero-actions, .trust-row { justify-content: center; }
+  .hero-text { max-width: 100%; }
   .feature-grid, .candidate-grid, .stats-strip { grid-template-columns: 1fr; }
   .section-heading, .ballot-panel-head, .ballot-footer, .cta-section, .site-footer, .security-section { display: block; }
-  .site-header { position: sticky; }
+  .section-heading { margin-bottom: 20px; }
+  .hero-visual {
+    height: 430px;
+    width: 100%;
+    max-width: 480px;
+    margin: 0 auto;
+  }
+  .shield-card { left: 18px; top: 32px; width: 210px; }
+  .ballot-card { right: 18px; bottom: 24px; width: 280px; }
+  .floating-card { transform: scale(.92); }
 }
 @media (max-width: 520px) {
   .site-header, .section-container, .site-footer { width: min(100% - 24px, 1160px); }
-  .hero { padding-top: 30px; }
+  .hero { padding-top: 24px; }
+  .hero-copy h1 { font-size: clamp(2.4rem, 10vw, 3.2rem); }
+  .hero-actions { flex-direction: column; align-items: stretch; }
+  .hero-actions .button, .hero-actions .text-link { width: 100%; justify-content: center; }
+  .trust-row { display: grid; gap: 12px; }
+  .trust-divider { display: none; }
   .auth-card { padding: 16px; }
   .forms-slider .auth-form { width: 100%; min-width: 100%; }
-  .candidate-card { flex-wrap: wrap; }
+  .candidate-card { flex-wrap: wrap; align-items: center; }
+  .candidate-details { min-width: 0; }
   .ballot-footer { display: block; }
   .ballot-footer .button { width: 100%; margin-top: 12px; }
   .mobile-nav-panel .button { width: 100%; }
+  .site-footer { display: grid; gap: 16px; }
+  .footer-links { justify-content: space-between; }
+  .cta-section { text-align: center; }
+  .hero-visual {
+    height: 360px;
+    max-width: 100%;
+  }
+  .shield-card {
+    width: 180px;
+    padding: 12px;
+    left: 8px;
+    top: 18px;
+    gap: 8px;
+  }
+  .ballot-card {
+    right: 8px;
+    bottom: 18px;
+    width: 240px;
+    padding: 14px;
+  }
+  .floating-card {
+    font-size: 12px;
+    left: 12px;
+    right: auto;
+    bottom: 12px;
+  }
+  .verified-card { right: 12px; left: auto; top: 12px; }
 }
