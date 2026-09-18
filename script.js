@@ -54,6 +54,12 @@ let turnoutTarget = 3;
 let turnoutPulseTimer = null;
 const adminEmail = 'praise234@gmail.com';
 
+function setAdminControlsVisible(isAdmin) {
+  const adminVisible = !!isAdmin;
+  if (adminBtn) adminBtn.hidden = !adminVisible;
+  if (adminBtnMobile) adminBtnMobile.hidden = !adminVisible;
+}
+
 const firebaseConfig = {
   apiKey: 'AIzaSyCRoR8aw1qxlsJgzKuH2O_h9fLqb8KcovU',
   authDomain: 'votesafe-47903.firebaseapp.com',
@@ -111,13 +117,9 @@ function setTurnoutTarget(value, label) {
 
 function startTurnoutPulse() {
   if (turnoutPulseTimer) clearInterval(turnoutPulseTimer);
-
-  turnoutPulseTimer = setInterval(() => {
-    const displacement = Math.sin(Date.now() / 500) * 6;
-    const current = Math.max(3, Math.min(100, turnoutTarget + displacement));
-    const label = turnoutTarget < 10 ? 'Waiting for the first voter' : turnoutTarget < 35 ? 'Voters are joining the queue' : turnoutTarget < 70 ? 'Momentum is building' : 'Election is moving fast';
-    updateTurnoutDisplay(current, label);
-  }, 180);
+  turnoutPulseTimer = null;
+  turnoutTarget = 3;
+  updateTurnoutDisplay(3, 'Waiting for the first voter');
 }
 
 function closeAuthOverlay() {
@@ -819,11 +821,11 @@ if (saveProfile) {
 auth.onAuthStateChanged(async user => {
   if (!user) {
     currentUserIsAdmin = false;
+    setAdminControlsVisible(false);
     showAuthOverlay();
     if (headerUser) headerUser.hidden = true;
     if (profileBtn) profileBtn.hidden = true;
-    if (adminBtn) adminBtn.hidden = true;
-    if (adminBtnMobile) adminBtnMobile.hidden = true;
+    if (signOutBtn) signOutBtn.hidden = true;
     if (appMain) appMain.classList.add('locked');
     return;
   }
@@ -835,7 +837,7 @@ auth.onAuthStateChanged(async user => {
   try {
     const userDoc = await db.collection('users').doc(user.uid).get();
     isAdmin = !!user.email && user.email.toLowerCase() === adminEmail.toLowerCase();
-    if (userDoc.exists && userDoc.data()?.isAdmin === true) {
+    if (userDoc.exists && userDoc.data()?.isAdmin === true && user.email && user.email.toLowerCase() === adminEmail.toLowerCase()) {
       isAdmin = true;
     }
   } catch (err) {
@@ -847,8 +849,7 @@ auth.onAuthStateChanged(async user => {
 
   if (headerUser) headerUser.hidden = false;
   if (profileBtn) profileBtn.hidden = false;
-  if (adminBtn) adminBtn.hidden = !isAdmin;
-  if (adminBtnMobile) adminBtnMobile.hidden = !isAdmin;
+  setAdminControlsVisible(isAdmin);
   if (signOutBtn) signOutBtn.hidden = false;
 
   await updateHeader(user);
