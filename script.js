@@ -56,8 +56,30 @@ const adminEmail = 'praise234@gmail.com';
 
 function setAdminControlsVisible(isAdmin) {
   const adminVisible = !!isAdmin && !!auth.currentUser && auth.currentUser.email && auth.currentUser.email.toLowerCase() === adminEmail.toLowerCase();
-  if (adminBtn) adminBtn.hidden = !adminVisible;
-  if (adminBtnMobile) adminBtnMobile.hidden = !adminVisible;
+  [adminBtn, adminBtnMobile].forEach(button => {
+    if (!button) return;
+    if (adminVisible) {
+      button.hidden = false;
+      button.removeAttribute('hidden');
+      button.style.display = '';
+      button.setAttribute('aria-hidden', 'false');
+      return;
+    }
+
+    button.hidden = true;
+    button.setAttribute('hidden', 'hidden');
+    button.style.display = 'none';
+    button.setAttribute('aria-hidden', 'true');
+  });
+}
+
+if (adminBtn) {
+  adminBtn.hidden = true;
+  adminBtn.style.display = 'none';
+}
+if (adminBtnMobile) {
+  adminBtnMobile.hidden = true;
+  adminBtnMobile.style.display = 'none';
 }
 
 const firebaseConfig = {

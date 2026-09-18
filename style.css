@@ -65,6 +65,7 @@ body.is-loading { overflow: hidden; }
 img { max-width: 100%; display: block; }
 a { text-decoration: none; }
 button, input { font: inherit; }
+#adminBtn[hidden], #adminBtnMobile[hidden] { display: none !important; }
 .page-shell { min-height: 100vh; opacity: 1; transition: opacity .5s ease; }
 .page-shell.locked { filter: blur(4px); pointer-events: none; }
 .section-container, .site-header, .site-footer { width: min(1160px, calc(100% - 48px)); margin-inline: auto; }
