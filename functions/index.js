@@ -1,69 +1,75 @@
 const functions = require('firebase-functions');
 const admin = require('firebase-admin');
 const cors = require('cors');
+const express = require('express');
 
 admin.initializeApp();
 const db = admin.firestore();
 
-// Enable CORS for all origins (can restrict to specific domains if needed)
-const corsHandler = cors({ origin: true });
+// Create Express app for CORS handling
+const app = express();
+app.use(cors({ origin: true }));
+app.use(express.json());
 
-exports.submitVote = functions.https.onRequest((req, res) => {
-  corsHandler(req, res, async () => {
-    // Only allow POST requests
-    if (req.method !== 'POST') {
-      return res.status(405).json({ error: 'Method not allowed' });
+// Handle submitVote as HTTP request with CORS
+app.post('/submitVote', async (req, res) => {
+  try {
+    // Get auth token from Authorization header
+    const authHeader = req.headers.authorization;
+    if (!authHeader || !authHeader.startsWith('Bearer ')) {
+      return res.status(401).json({ error: 'Unauthenticated: missing or invalid auth token' });
     }
 
+    const token = authHeader.substring(7);
+    let decodedToken;
     try {
-      // Get Firebase ID token from Authorization header
-      const authHeader = req.headers.authorization || '';
-      const idToken = authHeader.replace('Bearer ', '');
+      decodedToken = await admin.auth().verifyIdToken(token);
+    } catch (err) {
+      return res.status(401).json({ error: 'Unauthenticated: invalid token', details: err.message });
+    }
 
-      if (!idToken) {
-        return res.status(401).json({ error: 'User must be signed in' });
+    const uid = decodedToken.uid;
+    const email = decodedToken.email || null;
+    const candidate = req.body && req.body.candidate;
+
+    if (!candidate || typeof candidate !== 'string') {
+      return res.status(400).json({ error: 'Invalid: missing or invalid candidate' });
+    }
+
+    const voteRef = db.collection('votes').doc(uid);
+
+    await db.runTransaction(async (tx) => {
+      const snap = await tx.get(voteRef);
+      if (snap.exists) {
+        throw new Error('Already-exists: User has already voted');
       }
 
-      // Verify the token
-      const decodedToken = await admin.auth().verifyIdToken(idToken);
-      const uid = decodedToken.uid;
-      const email = decodedToken.email || null;
-
-      const candidate = req.body && req.body.candidate;
-      if (!candidate || typeof candidate !== 'string') {
-        return res.status(400).json({ error: 'Missing or invalid candidate' });
-      }
-
-      const voteRef = db.collection('votes').doc(uid);
-
-      await db.runTransaction(async (tx) => {
-        const snap = await tx.get(voteRef);
-        if (snap.exists) {
-          throw new Error('User has already voted');
-        }
-
-        tx.set(voteRef, {
-          uid,
-          email,
-          candidate,
-          timestamp: admin.firestore.FieldValue.serverTimestamp()
-        });
-
-        const eventsRef = db.collection('events').doc();
-        tx.set(eventsRef, {
-          type: 'vote_submitted',
-          uid,
-          email,
-          candidate,
-          time: admin.firestore.FieldValue.serverTimestamp()
-        });
+      tx.set(voteRef, {
+        uid,
+        email,
+        candidate,
+        timestamp: admin.firestore.FieldValue.serverTimestamp()
       });
 
-      return res.status(200).json({ success: true, message: 'Vote submitted successfully' });
-    } catch (err) {
-      console.error('submitVote error', err);
-      const message = err.message || 'Internal server error';
-      return res.status(500).json({ error: message });
+      const eventsRef = db.collection('events').doc();
+      tx.set(eventsRef, {
+        type: 'vote_submitted',
+        uid,
+        email,
+        candidate,
+        time: admin.firestore.FieldValue.serverTimestamp()
+      });
+    });
+
+    return res.json({ success: true });
+  } catch (err) {
+    console.error('submitVote error', err);
+    if (err.message && err.message.includes('Already-exists')) {
+      return res.status(409).json({ error: 'Already-exists', message: 'User has already voted' });
     }
-  });
+    return res.status(500).json({ error: 'Internal', message: err.message });
+  }
 });
+
+// Export as callable function
+exports.submitVote = functions.https.onRequest(app);

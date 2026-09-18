@@ -285,29 +285,36 @@ async function submitVoteToFirestore() {
 
   try {
     // Get ID token for authentication
-    const idToken = await user.getIdToken();
+    const idToken = await user.getIdToken(true);
 
-    // Call the HTTP Cloud Function with CORS support
-    const response = await fetch('https://us-central1-votesafe-47903.cloudfunctions.net/submitVote', {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-        'Authorization': `Bearer ${idToken}`
-      },
-      body: JSON.stringify({ candidate: selectedCandidate })
-    });
-
-    const result = await response.json();
+    // Call the Cloud Function via HTTP with CORS support
+    const response = await fetch(
+      'https://us-central1-votesafe-47903.cloudfunctions.net/submitVote',
+      {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${idToken}`
+        },
+        body: JSON.stringify({ candidate: selectedCandidate })
+      }
+    );
 
     if (!response.ok) {
-      throw new Error(result.error || 'Failed to submit vote');
+      const errorData = await response.json();
+      throw new Error(errorData.error || errorData.message || `HTTP ${response.status}`);
     }
 
-    hideModal();
-    showToast('Vote submitted securely', 'Your ballot has been recorded.', 3500);
-    const ballotPanel = document.querySelector('.ballot-panel');
-    if (ballotPanel) ballotPanel.classList.add('submitted');
-    await loadCandidateStats();
+    const result = await response.json();
+    if (result.success) {
+      hideModal();
+      showToast('Vote submitted securely', 'Your ballot has been recorded.', 3500);
+      const ballotPanel = document.querySelector('.ballot-panel');
+      if (ballotPanel) ballotPanel.classList.add('submitted');
+      await loadCandidateStats();
+    } else {
+      throw new Error(result.error || 'Vote submission failed');
+    }
   } catch (err) {
     const message = err && err.message ? err.message : 'Vote could not be submitted';
     showToast('Submission failed', message, 4000);
