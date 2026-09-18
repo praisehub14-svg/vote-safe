@@ -55,7 +55,7 @@ let turnoutPulseTimer = null;
 const adminEmail = 'praise234@gmail.com';
 
 function setAdminControlsVisible(isAdmin) {
-  const adminVisible = !!isAdmin;
+  const adminVisible = !!isAdmin && !!auth.currentUser && auth.currentUser.email && auth.currentUser.email.toLowerCase() === adminEmail.toLowerCase();
   if (adminBtn) adminBtn.hidden = !adminVisible;
   if (adminBtnMobile) adminBtnMobile.hidden = !adminVisible;
 }
